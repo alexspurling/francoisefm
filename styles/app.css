@@ -1,0 +1,231 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 0.8rem;
+  background-image: url("../images/speakercloth.png");
+}
+
+.wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  width: 90%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+header {
+  margin: 30px;
+  text-align: center;
+}
+
+h1, h2 {
+  text-align: center;
+  font-weight: normal;
+  padding: 0.5rem 0 0 0;
+}
+
+h3 {
+  font-size: 1.2rem;
+}
+
+.main-controls {
+  display: grid
+}
+
+canvas {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.textBlock {
+  font-size: 1.4rem;
+  margin: 10px 0px;
+}
+
+button {
+  font-size: 1.5rem;
+  padding: 0rem;
+  border: none;
+}
+
+.record {
+  width: 100%;
+  margin: 10px 0px;
+  font-size: 1.5rem;
+  background: #0088cc;
+  text-align: center;
+  color: white;
+  border: none;
+  transition: all 0.2s;
+  padding: 0.5rem;
+}
+
+button.ask {
+  background: #009549;
+}
+
+button.ready {
+  background: #0088cc;
+}
+
+button.recording {
+  background: #d00;
+}
+
+button.denied {
+  background: #ccc;
+  color: #666;
+}
+
+button:hover {
+  // box-shadow: inset 0px 0px 10px rgba(255, 255, 255, 1);
+  filter: brightness(1.1);
+}
+
+
+input {
+  font-size: 1.5rem;
+  padding: 10px;
+  margin: 10px auto;
+  width: 100%;
+}
+
+
+/* Make the clips use as much space as possible, and
+ * also show a scrollbar when there are too many clips to show
+ * in the available space */
+.soundClips {
+  margin: 40px 0px 0px 0px;
+  flex: 1;
+  overflow: auto;
+}
+
+section {
+  text-align: center;
+  padding: 3px;
+  position: relative;
+  transition: 1s;
+}
+
+.login {
+  top: 0px;
+  opacity: 1;
+}
+
+.loginHidden {
+  top: -122px;
+  opacity: 0;
+}
+
+.main {
+  top: -122px;
+  opacity: 1;
+}
+
+.mainHidden {
+  top: 0px;
+  opacity: 0;
+}
+
+.clip {
+  padding-bottom: 1rem;
+}
+
+audio {
+  width: 100%;
+  display: block;
+  margin: 1rem auto 0.5rem;
+}
+
+.clip p {
+  display: inline-block;
+  font-size: 1rem;
+}
+
+.clip button {
+  font-size: 1rem;
+  float: right;
+}
+
+button.delete {
+  background: #e41e26;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+/* Checkbox hack to control information box display */
+
+label {
+  font-size: 2rem;
+  position: absolute;
+  top: 2px;
+  right: 3px;
+  z-index: 5;
+  cursor: pointer;
+  background-color: snow;
+  border-radius: 40px;
+}
+
+input[type=checkbox] {
+   position: absolute;
+   top: -100px;
+}
+
+aside {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: translateX(100%);
+  transition: 0.3s all ease-out;
+  background-color: #efefef;
+  padding: 1rem;
+}
+
+aside p {
+  font-size: 1.2rem;
+  margin: 0.5rem 0;
+}
+
+aside a {
+  color: #666;
+}
+
+/* Toggled State of information box */
+input[type=checkbox]:checked ~ aside {
+  transform: translateX(0);
+}
+
+/* Cursor when clip name is clicked over */
+
+.clip p {
+  cursor: pointer;
+}
+
+/* Adjustments for wider screens
+@media all and (min-width: 800px) {
+  // Don't take all the space as readability is lost when line length goes past a certain size
+  .wrapper {
+    width: 90%;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+}
+*/
+
+img {
+    max-width: 100%;
+    height: auto;
+    width: auto\9; /* ie8 */
+}

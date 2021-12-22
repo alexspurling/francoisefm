@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Françoise FM</title>
+    <link href="styles/app.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+
+<div class="wrapper">
+
+    <header>
+        <img src="images/francoisefm.svg">
+    </header>
+
+    <section id="loginSection" class="login">
+        <input type="text" placeholder="Name" class="nameInput">
+        <button id="enter" class="record">Enter</button>
+    </section>
+
+    <section id="mainSection" class="mainHidden">
+        <p class="textBlock">Welcome Alex, please record a short message to Françiose to send her your best wishes for her birthday.
+            You can record as many messages as you like and come back and delete them at any time.</p>
+
+        <button id="record" class="record ask">Turn on microphone</button>
+
+        <canvas class="visualizer" height="60px"></canvas>
+
+        <div class="soundClips" style="display:none;">
+            <h3>Your messages</h3>
+        </div>
+    </section>
+
+    <label for="toggle">❔</label>
+    <input type="checkbox" id="toggle">
+    <aside>
+        <h2>Happy Birthday, Françiose!</h2>
+
+        <p>&nbsp;</p>
+        <p>Please leave Françiose a nice voice message of 30 to 60s for her birthday. You can record as many messages as you like and come back and delete them at any time.</p>
+
+        <img width="100%" src="images/speakerphoto.jpeg">
+        <p>&nbsp;</p>
+        <p>Many thanks from Christophe and Alex!</p>
+    </aside>
+
+</div>
+<script src="scripts/app.js"></script>
+
+</body>
+</html>
