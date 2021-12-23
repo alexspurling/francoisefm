@@ -1,0 +1,45 @@
+---
+- hosts: all
+  become: true
+  tasks:
+
+    - name: Enable
+      community.general.ufw:
+        state: disabled
+
+    - name: Set logging
+      community.general.ufw:
+        logging: 'on'
+
+    # ufw supports connection rate limiting, which is useful for protecting
+    # against brute-force login attacks. ufw will deny connections if an IP
+    # address has attempted to initiate 6 or more connections in the last
+    # 30 seconds. See  http://www.debian-administration.org/articles/187
+    # for details.
+    - name: Limit SSH
+      community.general.ufw:
+        rule: limit
+        name: OpenSSH
+
+    - name: Allow 80
+      community.general.ufw:
+        rule: allow
+        port: '80'
+        proto: tcp
+
+    - name: Allow 443
+      community.general.ufw:
+        rule: allow
+        port: '443'
+        proto: tcp
+
+    - name: Enable outgoing
+      community.general.ufw:
+        policy: allow
+        direction: outgoing
+
+    - name: Disable incoming
+      community.general.ufw:
+        state: enabled
+        policy: deny
+        direction: incoming

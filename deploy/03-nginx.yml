@@ -1,0 +1,35 @@
+---
+- hosts: all
+  become: yes
+  vars:
+    server_name: francoise.fm
+    document_root: /var/www
+  tasks:
+    - name: Update apt cache and install Nginx
+      apt:
+        name: nginx
+        state: latest
+        update_cache: yes
+    - name: Create website dir
+      ansible.builtin.file:
+        path: "{{ document_root }}/{{ server_name }}"
+        state: directory
+        mode: "0755"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+    - name: Apply Nginx template
+      template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/sites-available/default
+      notify: Restart Nginx
+    - name: Enable new site
+      file:
+        src: /etc/nginx/sites-available/default
+        dest: /etc/nginx/sites-enabled/default
+        state: link
+      notify: Restart Nginx
+  handlers:
+    - name: Restart Nginx
+      service:
+        name: nginx
+        state: restarted

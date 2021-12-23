@@ -38,10 +38,6 @@ h3 {
   font-size: 1.2rem;
 }
 
-.main-controls {
-  display: grid
-}
-
 canvas {
   display: block;
   margin-bottom: 0.5rem;
@@ -163,6 +159,11 @@ button.delete {
   font-size: 0.8rem;
 }
 
+.warning {
+  font-size: 1.5rem;
+  color: #e41e26;
+}
+
 /* Checkbox hack to control information box display */
 
 label {
@@ -179,32 +180,6 @@ label {
 input[type=checkbox] {
    position: absolute;
    top: -100px;
-}
-
-aside {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  transform: translateX(100%);
-  transition: 0.3s all ease-out;
-  background-color: #efefef;
-  padding: 1rem;
-}
-
-aside p {
-  font-size: 1.2rem;
-  margin: 0.5rem 0;
-}
-
-aside a {
-  color: #666;
-}
-
-/* Toggled State of information box */
-input[type=checkbox]:checked ~ aside {
-  transform: translateX(0);
 }
 
 /* Cursor when clip name is clicked over */

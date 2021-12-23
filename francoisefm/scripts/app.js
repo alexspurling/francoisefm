@@ -8,6 +8,7 @@ const nameInput = document.querySelector('.nameInput');
 const enterButton = document.querySelector('#enter');
 const mainSection = document.querySelector('#mainSection');
 const textBlock = document.querySelector('.textBlock');
+const warning = document.querySelector('.warning');
 
 var recording = false;
 var microphonePermissionGranted = false;
@@ -19,7 +20,7 @@ const canvasCtx = canvas.getContext("2d");
 
 //main block for doing the audio recording
 
-if (navigator.mediaDevices.getUserMedia) {
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
     console.log('getUserMedia supported.');
 
     const constraints = { audio: true };
@@ -145,7 +146,8 @@ if (navigator.mediaDevices.getUserMedia) {
     });
 
 } else {
-     console.log('getUserMedia not supported on your browser!');
+    console.log('getUserMedia not supported on this browser!');
+    warning.style.display = "block"
 }
 
 function visualize(stream) {

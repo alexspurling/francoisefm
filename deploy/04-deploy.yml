@@ -1,0 +1,14 @@
+---
+- hosts: all
+  vars:
+    # This should match the one in 03-nginx.yml
+    server_name: francoise.fm
+    document_root: /var/www
+    app_source: francoisefm
+  tasks:
+    - name: Copy website files to the server's document root
+      copy:
+        src: "../{{ app_source }}/"
+        dest: "{{ document_root }}/{{ server_name }}"
+        # Mode has to be a string
+        mode: '755'
