@@ -8,10 +8,15 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class AudioServlet extends HttpServlet {
 
@@ -23,16 +28,62 @@ public class AudioServlet extends HttpServlet {
     private static final int MAX_FILE_SIZE = 1000000; // 1mb max file size
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         long startTime = System.currentTimeMillis();
         LOG.info("GET " + getRequestURL(request));
 
-        setAllowHeaders(request, response);
-
-        response.setStatus(HttpServletResponse.SC_OK);
-
+        try {
+            handleGet(request, response);
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, "Error handling POST", e);
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        }
         long timeTaken = System.currentTimeMillis() - startTime;
         LOG.info("GET (" + timeTaken + "ms): " + response.getStatus());
+    }
+
+    private void handleGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+
+        validatePath(request);
+        validateQueryString(request);
+
+        setAllowHeaders(request, response);
+
+        UserId userId = getUserId(request);
+
+        File userDir = getUserDir(userId);
+        if (!userDir.exists()) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+        File[] userFiles = userDir.listFiles();
+        if (userFiles == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+        // Make sure we only look for files that match the logged in user's name
+        List<File> ownUserFiles = Arrays.stream(userFiles)
+                .sorted(Comparator.comparingLong(File::lastModified))
+                .filter((f) -> f.getName().matches("^" + Pattern.quote(userId.name) + "[0-9][0-9].[a-zA-Z0-9]+$"))
+                .collect(Collectors.toList());
+
+        if (ownUserFiles.isEmpty()) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
+        PrintWriter writer = response.getWriter();
+
+        writer.println("[");
+
+        for (File file : ownUserFiles) {
+            writer.println("  \"/audio/" + userId.token + "/" + file.getName() + "\",");
+        }
+
+        writer.println("]");
+
+        response.setContentType("application/json");
+        response.setStatus(HttpServletResponse.SC_OK);
     }
 
     @Override
@@ -134,11 +185,11 @@ public class AudioServlet extends HttpServlet {
         // We always expect POST requests to be made to /audio and nothing else (no trailing / or any other params)
         String path = request.getPathInfo();
         if (request.getPathInfo() != null) {
-            throw new AudioServerException("Invalid path for POST: " + path);
+            throw new AudioServerException("Invalid path: " + path);
         }
     }
 
-    private File getNewAudioFile(UserId userId, String audioContainer) {
+    private File getUserDir(UserId userId) {
         File audioDir = AudioServer.getAudioDir();
         File userDir = new File(audioDir, userId.token);
         if (!userDir.exists()) {
@@ -146,9 +197,15 @@ public class AudioServlet extends HttpServlet {
                 throw new AudioServerException("Could not create user dir: " + userDir.getAbsolutePath());
             }
         }
+        return userDir;
+    }
+
+    private File getNewAudioFile(UserId userId, String audioContainer) {
+        File userDir = getUserDir(userId);
         String fileExtension = audioContainer != null ? audioContainer : "ogg";
-        for (int i = 0; i < MAX_FILES_PER_USER; i++) {
-            File audioFile = new File(userDir, userId.name + i + "." + fileExtension);
+        for (int i = 1; i < MAX_FILES_PER_USER; i++) {
+
+            File audioFile = new File(userDir, String.format(userId.name + "%02d", i) + fileExtension);
             if (!audioFile.exists()) {
                 return audioFile;
             }
