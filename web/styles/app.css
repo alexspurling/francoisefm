@@ -143,12 +143,6 @@ audio {
   margin: 1rem auto 0.5rem;
 }
 
-p.saving {
-  font-size: 1rem;
-  float: right;
-  padding: 5px;
-}
-
 .clip p {
   display: inline-block;
   font-size: 1rem;

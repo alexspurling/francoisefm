@@ -13,6 +13,9 @@ const warning = document.querySelector('.warning');
 var recording = false;
 var microphonePermissionGranted = false;
 
+let username = '';
+let userToken = getUserToken();
+
 // visualiser setup - create web audio api context and canvas
 
 let audioCtx;
@@ -24,11 +27,13 @@ if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
     console.log('getUserMedia supported.');
 
     const constraints = { audio: true };
+
     let chunks = [];
 
-    var clipCount = 0;
-
     var mediaRecorder = undefined;
+
+    var detectedMimeType = null;
+
     let onSuccess = function(stream) {
         mediaRecorder = new MediaRecorder(stream);
 
@@ -40,7 +45,6 @@ if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             const clipContainer = document.createElement('article');
             const clipLabel = document.createElement('p');
             const audio = document.createElement('audio');
-            const saving = document.createElement('p');
             const deleteButton = document.createElement('button');
 
             clipContainer.classList.add('clip');
@@ -48,21 +52,16 @@ if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             deleteButton.textContent = 'Delete';
             deleteButton.className = 'delete';
 
-            saving.textContent = "Saving...";
-            saving.classList.add('saving');
-
-            clipCount += 1;
-            clipLabel.textContent = username + " clip " + clipCount;
+            clipLabel.textContent = "Saving " + username + " clip...";
 
             clipContainer.appendChild(audio);
             clipContainer.appendChild(clipLabel);
             clipContainer.appendChild(deleteButton);
-            clipContainer.appendChild(saving);
             soundClips.appendChild(clipContainer);
             soundClips.style.display = "block"
 
             audio.controls = true;
-            const blob = new Blob(chunks, { 'type' : 'audio/ogg; codecs=opus' });
+            const blob = new Blob(chunks, {type: detectedMimeType});
             chunks = [];
             const audioURL = window.URL.createObjectURL(blob);
             audio.src = audioURL;
@@ -73,18 +72,10 @@ if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                 evtTgt.parentNode.parentNode.removeChild(evtTgt.parentNode);
             }
 
-            clipLabel.onclick = function() {
-                const existingName = clipLabel.textContent;
-                const newClipName = prompt('Enter a new name for your sound clip?');
-                if (newClipName === null) {
-                    clipLabel.textContent = existingName;
-                } else {
-                    clipLabel.textContent = newClipName;
-                }
-            }
-
             console.log('Ok... sending audio');
-            var headers = {'Authorization': 'Bearer hello'};
+            // The browser should automatically set the Content-Type based on the body
+            // but let's set it explicitly just in case
+            var headers = {'Authorization': 'Bearer ' + username + userToken, 'Content-Type': detectedMimeType};
             var options = {
                 method: 'POST',
                 headers: headers,
@@ -93,15 +84,24 @@ if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                 credentials: 'include'
             }
             let promise = fetch('http://localhost:7625/audio', options)
-                .then(e => {
-                    console.log('Finished sending audio', e);
-                }).catch(e => {
-                    console.log('Error sending audio', e);
+                .then(response => {
+                    console.log('Finished sending audio', response);
+//                    response.headers.forEach(h => { console.log(h); });
+                    var location = response.headers.get('Location');
+                    var fileName = location.substring(location.lastIndexOf('/') + 1)
+                    clipLabel.textContent = "Saved as " + fileName;
+                }).catch(response => {
+                    console.log('Error sending audio', response);
+                    clipLabel.textContent = "Error saving";
                 });
         }
 
         mediaRecorder.ondataavailable = function(e) {
             chunks.push(e.data);
+
+            if (detectedMimeType == null) {
+                detectedMimeType = e.type;
+            }
         }
     }
 
@@ -127,6 +127,8 @@ if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             navigator.mediaDevices.getUserMedia(constraints).then(onSuccess, onError);
         } else if (!mediaRecorder) {
             console.log("Something went wrong initialising media recorder")
+            record.className = "record error"
+            record.textContent = "Something went wrong :(";
         } else if (!recording) {
             mediaRecorder.start();
             console.log(mediaRecorder.state);
@@ -141,7 +143,6 @@ if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             record.className = "record ready"
             record.textContent = "Record";
             recording = false;
-            // mediaRecorder.requestData();
         }
     }
 
@@ -174,6 +175,42 @@ if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
 } else {
     console.log('getUserMedia not supported on this browser!');
     warning.style.display = "block"
+}
+
+function uuid() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var rnd = Math.random() * 16 | 0, v = c === 'x' ? rnd : (rnd & 0x3 | 0x8) ;
+        return v.toString(16);
+    });
+}
+
+function findSubArray(arr, subarr, from_index) {
+    from_index = from_index || 0;
+
+    var i, found, j = 0;
+    var last_check_index = arr.length - subarr.length;
+    var subarr_length = subarr.length;
+
+    position_loop:
+    for (i = from_index; i <= last_check_index; ++i) {
+        for (j = 0; j < subarr_length; ++j) {
+            if (arr[i + j] !== subarr[j]) {
+                continue position_loop;
+            }
+        }
+        return i;
+    }
+    return -1;
+};
+
+function getUserToken() {
+    var localStorageKey = 'francoisefmusertoken';
+    var userToken = window.localStorage.getItem(localStorageKey)
+    if (!userToken) {
+        userToken = uuid();
+    }
+    window.localStorage.setItem(localStorageKey, userToken);
+    return userToken;
 }
 
 function visualize(stream) {

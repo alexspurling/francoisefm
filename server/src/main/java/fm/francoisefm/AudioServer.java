@@ -6,10 +6,18 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
+import java.io.File;
+import java.util.logging.Logger;
+
 public class AudioServer {
+
+    private static final Logger LOG = Logger.getLogger("AudioServer");
+
+    private static File audioDir;
 
     public void start() throws Exception {
 
+        long startTime = System.currentTimeMillis();
         int maxThreads = 100;
         int minThreads = 10;
         int idleTimeout = 120;
@@ -23,15 +31,44 @@ public class AudioServer {
 
         ServletHandler servletHandler = new ServletHandler();
 
-        servletHandler.addServletWithMapping(AudioServlet.class, "/*");
+        servletHandler.addServletWithMapping(AudioServlet.class, "/audio/*");
         server.setHandler(servletHandler);
 
         server.start();
+
+        long timeTaken = System.currentTimeMillis() - startTime;
+        LOG.info("Server started in " + timeTaken + "ms");
+
         server.join();
     }
 
+    public static File getAudioDir() {
+        return audioDir;
+    }
+
     public static void main(String[] args) throws Exception {
+        if (args.length != 1) {
+            System.out.println("Usage: AudioServer <audio-dir>");
+            System.exit(1);
+        }
+
+        ensureDirectoryExists(new File("logs"));
+
+        audioDir = new File(args[0]);
+        ensureDirectoryExists(audioDir);
+
         AudioServer server = new AudioServer();
         server.start();
+    }
+
+    private static void ensureDirectoryExists(File audioDirParam) {
+        if (!audioDirParam.exists()) {
+            LOG.severe("Directory does not exist: " + audioDirParam.getAbsolutePath());
+            System.exit(1);
+        }
+        if (audioDirParam.isFile()) {
+            LOG.severe("Not a directory: " + audioDirParam.getAbsolutePath());
+            System.exit(1);
+        }
     }
 }
