@@ -4,7 +4,7 @@
     # This should match the one in 03-nginx.yml
     server_name: francoise.fm
     document_root: /var/www
-    app_source: francoisefm
+    app_source: web
   tasks:
     - name: Copy website files to the server's document root
       copy:

@@ -40,6 +40,7 @@ if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             const clipContainer = document.createElement('article');
             const clipLabel = document.createElement('p');
             const audio = document.createElement('audio');
+            const saving = document.createElement('p');
             const deleteButton = document.createElement('button');
 
             clipContainer.classList.add('clip');
@@ -47,12 +48,16 @@ if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             deleteButton.textContent = 'Delete';
             deleteButton.className = 'delete';
 
+            saving.textContent = "Saving...";
+            saving.classList.add('saving');
+
             clipCount += 1;
             clipLabel.textContent = username + " clip " + clipCount;
 
             clipContainer.appendChild(audio);
             clipContainer.appendChild(clipLabel);
             clipContainer.appendChild(deleteButton);
+            clipContainer.appendChild(saving);
             soundClips.appendChild(clipContainer);
             soundClips.style.display = "block"
 
@@ -71,12 +76,28 @@ if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             clipLabel.onclick = function() {
                 const existingName = clipLabel.textContent;
                 const newClipName = prompt('Enter a new name for your sound clip?');
-                if(newClipName === null) {
+                if (newClipName === null) {
                     clipLabel.textContent = existingName;
                 } else {
                     clipLabel.textContent = newClipName;
                 }
             }
+
+            console.log('Ok... sending audio');
+            var headers = {'Authorization': 'Bearer hello'};
+            var options = {
+                method: 'POST',
+                headers: headers,
+                body: blob,
+                mode: 'cors',
+                credentials: 'include'
+            }
+            let promise = fetch('http://localhost:7625/audio', options)
+                .then(e => {
+                    console.log('Finished sending audio', e);
+                }).catch(e => {
+                    console.log('Error sending audio', e);
+                });
         }
 
         mediaRecorder.ondataavailable = function(e) {
@@ -143,6 +164,11 @@ if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             microphonePermissionGranted = false;
         }
         result.onchange = onGranted;
+    }).catch(e => {
+        console.log("Error querying microphone permission state", e);
+        console.log("Assuming permission has been granted")
+        navigator.mediaDevices.getUserMedia(constraints).then(onSuccess, onError);
+        onGranted({target:{state:'granted'}});
     });
 
 } else {
