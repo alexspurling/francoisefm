@@ -8,6 +8,9 @@ import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 public class AudioServer {
@@ -46,27 +49,37 @@ public class AudioServer {
         server.join();
     }
 
-    public static void main(String[] args) throws Exception {
-        if (args.length != 1) {
-            System.out.println("Usage: AudioServer <audio-dir>");
+    private static void configureLogger() {
+        InputStream stream = AudioServer.class.getClassLoader().getResourceAsStream("logging.properties");
+        if (stream == null) {
+            LOG.warning("No configuration found for logging. Using default config.");
+        } else {
+            try {
+                LogManager.getLogManager().readConfiguration(stream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static void ensureDirectoryExists(File dir) {
+        if (dir.exists() && dir.isFile()) {
+            LOG.severe("Not a directory: " + dir.getAbsolutePath());
             System.exit(1);
         }
+        dir.mkdir();
+        if (!dir.exists()) {
+            LOG.severe("Failed to create directory: " + dir.getAbsolutePath());
+            System.exit(1);
+        }
+    }
 
+    public static void main(String[] args) throws Exception {
+        configureLogger();
         ensureDirectoryExists(new File("logs"));
         ensureDirectoryExists(new File("recordings"));
 
         AudioServer server = new AudioServer();
         server.start();
-    }
-
-    private static void ensureDirectoryExists(File audioDirParam) {
-        if (!audioDirParam.exists()) {
-            LOG.severe("Directory does not exist: " + audioDirParam.getAbsolutePath());
-            System.exit(1);
-        }
-        if (audioDirParam.isFile()) {
-            LOG.severe("Not a directory: " + audioDirParam.getAbsolutePath());
-            System.exit(1);
-        }
     }
 }

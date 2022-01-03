@@ -1,6 +1,6 @@
 ---
 - hosts: all
-  become: true
+  become: yes
   tasks:
     - name: Make sure we have a 'wheel' group
       group:
@@ -16,12 +16,13 @@
         validate: 'visudo -cf %s'
 
     - name: Add sudoers users to wheel group
-      user:
-        name=alex
-        groups=wheel
-        append=yes
-        state=present
-        createhome=yes
+      ansible.builtin.user:
+        name: alex
+        groups: wheel
+        append: yes
+        state: present
+        createhome: yes
+        shell: /bin/bash
 
     - name: Set up authorized keys for the alex user
       authorized_key: user=alex key="{{item}}"

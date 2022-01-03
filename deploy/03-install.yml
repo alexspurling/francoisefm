@@ -4,6 +4,7 @@
   vars:
     server_name: francoise.fm
     document_root: /var/www
+    server_source: ../server
   tasks:
     - name: Update apt cache and install Nginx
       apt:
@@ -28,8 +29,35 @@
         dest: /etc/nginx/sites-enabled/default
         state: link
       notify: Restart Nginx
+    - name: Install Certbot
+      community.general.snap:
+        name: certbot
+        classic: true
+    - name: Create symlink for certbot executable
+      ansible.builtin.file:
+        src: /snap/bin/certbot
+        dest: /usr/bin/certbot
+        state: link
+    - name: Configure LetsEncrypt
+      ansible.builtin.shell:
+        cmd: certbot --nginx --cert-name=francoise.fm -n
+      notify: Restart Nginx
+    - name: Install Java 17
+      apt:
+        name: openjdk-17-jre-headless
+        state: latest
+        update_cache: yes
+    - name: Create service for Java server
+      copy:
+        src: "{{ server_source }}/francoisefm_server.service"
+        dest: "/etc/systemd/system"
+      notify: Restart Java Service
   handlers:
     - name: Restart Nginx
       service:
         name: nginx
+        state: restarted
+    - name: Restart Java Service
+      service:
+        name: francoisefm_server
         state: restarted

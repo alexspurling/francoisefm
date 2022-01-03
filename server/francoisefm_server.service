@@ -1,0 +1,16 @@
+[Unit]
+Description=Run francoisefm server
+DefaultDependencies=no
+After=network.target
+
+[Service]
+Type=simple
+User=alex
+WorkingDirectory=/home/alex/server/
+ExecStart=/home/alex/server/run_server.sh
+TimeoutStopSec=10
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

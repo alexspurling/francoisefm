@@ -2,8 +2,6 @@
   <configuration default="false" name="AudioServer" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="fm.francoisefm.AudioServer" />
     <module name="server" />
-    <option name="PROGRAM_PARAMETERS" value="audio" />
-    <option name="VM_PARAMETERS" value="-Djava.util.logging.config.file=server/src/main/resources/logging.properties" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="fm.francoisefm.*" />

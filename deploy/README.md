@@ -8,7 +8,8 @@ Host francoisefm
     Hostname 167.172.55.28
     User root
 ```
-**Install Ansible**
+
+### Install Ansible
 ```commandline
 sudo apt install ansible
 ```
@@ -16,29 +17,32 @@ sudo apt install ansible
 or on MacOS:
 
 ```commandline
-cd ~/dev/virtualenvs
-pip install virtualenv
-python -m virtualenv ansible
-source ansible/bin/activate
 python -m pip install ansible
-```
-
-and then make sure to run this before running the following Ansible commands:
-
-```commandline
-source ~/dev/virtualenvs/ansible/bin/activate
 ```
 
 **Check Ansible version**
 ```commandline
-
+$ ansible --version
+ansible [core 2.12.1]
+  config file = None
+  configured module search path = ['/Users/alex/.ansible/plugins/modules', '/usr/share/ansible/plugins/modules']
+  ansible python module location = /Users/alex/Library/Python/3.9/lib/python/site-packages/ansible
+  ansible collection location = /Users/alex/.ansible/collections:/usr/share/ansible/collections
+  executable location = /Users/alex/Library/Python/3.9/bin/ansible
+  python version = 3.9.4 (default, Jul  3 2021, 15:27:29) [Clang 9.1.0 (clang-902.0.39.1)]
+  jinja version = 3.0.3
+  libyaml = True
 ```
 
 
 **Install the community general collection**
 ```commandline
 ansible-galaxy collection install community.general
+
 ```
+
+### Run Ansible
+
 **Set up the UFW firewall**
 ```commandline
 ansible-playbook -i inventory 01-setupfirewall.yml -u root
@@ -47,20 +51,11 @@ ansible-playbook -i inventory 01-setupfirewall.yml -u root
 ```commandline
 ansible-playbook -i inventory 02-createuser.yml -u root
 ```
-**Install nginx**
+**Install required software**
 ```commandline
-ansible-playbook -i inventory 03-nginx.yml -u alex
+ansible-playbook -i inventory 03-install.yml -u alex
 ```
 **Deploy the site**
 ```commandline
-ansible-playbook -i inventory 03-nginx.yml -u alex
-```
-**Login to Ubuntu server and install LetsEncrypt**
-
-Instructions originate here: https://certbot.eff.org/instructions?ws=nginx&os=ubuntufocal
-```commandline
-sudo snap install core
-sudo snap refresh core
-sudo snap install --classic certbot
-sudo ln -s /snap/bin/certbot /usr/bin/certbot
+ansible-playbook -i inventory 04-deploy.yml -u alex
 ```

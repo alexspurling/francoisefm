@@ -6,6 +6,12 @@ server {
 
   server_name {{ server_name }};
 
+  # Java server
+  location /audio {
+      proxy_pass http://localhost:9090/audio;
+  }
+
+  # Static content
   location / {
     default_type "text/html";
     try_files $uri.html $uri $uri/ =404;

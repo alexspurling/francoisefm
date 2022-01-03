@@ -4,11 +4,37 @@
     # This should match the one in 03-nginx.yml
     server_name: francoise.fm
     document_root: /var/www
-    app_source: web
+    web_source: ../web
+    server_source: ../server
+    server_jar: server-1.0-jar-with-dependencies.jar
+    # Should be the current user's home dir (e.g. /home/alex)
+    server_root: ~/server
   tasks:
     - name: Copy website files to the server's document root
       copy:
-        src: "../{{ app_source }}/"
+        src: "{{ web_source }}/"
         dest: "{{ document_root }}/{{ server_name }}"
         # Mode has to be a string
         mode: '755'
+    - name: Replace front-end's path to the server
+      ansible.builtin.replace:
+        path: "{{ document_root }}/{{ server_name }}/scripts/app.js"
+        regexp: 'http://localhost:9090'
+        replace: ''
+    - name: Copy server jar
+      copy:
+        src: "{{ server_source }}/target/{{ server_jar }}"
+        dest: "{{ server_root }}/"
+      notify: Restart Java Service
+    - name: Copy server run script
+      copy:
+        src: "{{ server_source }}/run_server.sh"
+        dest: "{{ server_root }}/"
+        mode: a+x
+      notify: Restart Java Service
+  handlers:
+    - name: Restart Java Service
+      become: yes
+      service:
+        name: francoisefm_server
+        state: restarted
