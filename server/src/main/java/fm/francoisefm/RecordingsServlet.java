@@ -18,24 +18,24 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class AudioServlet extends HttpServlet {
+public class RecordingsServlet extends HttpServlet {
 
-    private static final Logger LOG = Logger.getLogger("AudioServlet");
+    private static final Logger LOG = Logger.getLogger("RecordingsServlet");
 
-    private static final Pattern USER_ID = Pattern.compile("^Bearer (.+)([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$");
+    private static final Pattern AUDIO_CONTAINER = Pattern.compile("^audio/(\\w+)", Pattern.CASE_INSENSITIVE);
 
     private static final int MAX_FILES_PER_USER = 100;
     private static final int MAX_FILE_SIZE = 1000000; // 1mb max file size
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) {
         long startTime = System.currentTimeMillis();
-        LOG.info("GET " + getRequestURL(request));
+        LOG.info("GET " + ServletHelper.getRequestURL(request));
 
         try {
             handleGet(request, response);
         } catch (Exception e) {
-            LOG.log(Level.WARNING, "Error handling POST", e);
+            LOG.log(Level.WARNING, "Error handling GET", e);
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
         }
         long timeTaken = System.currentTimeMillis() - startTime;
@@ -45,13 +45,13 @@ public class AudioServlet extends HttpServlet {
     private void handleGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         validatePath(request);
-        validateQueryString(request);
+        ServletHelper.validateQueryString(request);
+        ServletHelper.setAllowHeaders(request, response);
 
-        setAllowHeaders(request, response);
+        UserId userId = ServletHelper.getUserId(request);
+        LOG.info("User id: " + userId);
 
-        UserId userId = getUserId(request);
-
-        File userDir = getUserDir(userId);
+        File userDir = ServletHelper.getUserDir(userId);
         if (!userDir.exists()) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;
@@ -61,10 +61,10 @@ public class AudioServlet extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
-        // Make sure we only look for files that match the logged in user's name
+        // Make sure we only look for files that match the logged-in user's name
         List<File> ownUserFiles = Arrays.stream(userFiles)
                 .sorted(Comparator.comparingLong(File::lastModified))
-                .filter((f) -> f.getName().matches("^" + Pattern.quote(userId.name) + "[0-9][0-9].[a-zA-Z0-9]+$"))
+                .filter((f) -> f.getName().matches("^" + Pattern.quote(userId.name) + "[0-9][0-9].\\w+$"))
                 .collect(Collectors.toList());
 
         if (ownUserFiles.isEmpty()) {
@@ -76,9 +76,12 @@ public class AudioServlet extends HttpServlet {
 
         writer.println("[");
 
-        for (File file : ownUserFiles) {
-            writer.println("  \"/audio/" + userId.token + "/" + file.getName() + "\",");
+        // Awkward iteration through all but the last file
+        for (int i = 0; i < ownUserFiles.size() - 1; i++) {
+            writer.println("  \"/audio/" + userId.token + "/" + ownUserFiles.get(i).getName() + "\",");
         }
+        // So that the last file does not include a comma
+        writer.println("  \"/audio/" + userId.token + "/" + ownUserFiles.get(ownUserFiles.size() - 1).getName() + "\"");
 
         writer.println("]");
 
@@ -88,9 +91,9 @@ public class AudioServlet extends HttpServlet {
 
     @Override
     protected void doOptions(HttpServletRequest request, HttpServletResponse response) {
-        LOG.info("OPTIONS: " + getRequestURL(request));
+        LOG.info("OPTIONS: " + ServletHelper.getRequestURL(request));
 
-        setAllowHeaders(request, response);
+        ServletHelper.setAllowHeaders(request, response);
 
         response.setStatus(HttpServletResponse.SC_OK);
     }
@@ -98,7 +101,7 @@ public class AudioServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) {
         long startTime = System.currentTimeMillis();
-        LOG.info("POST: " + getRequestURL(request));
+        LOG.info("POST: " + ServletHelper.getRequestURL(request));
 
         try {
             handlePost(request, response);
@@ -113,20 +116,19 @@ public class AudioServlet extends HttpServlet {
     private void handlePost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         validatePath(request);
-        validateQueryString(request);
+        ServletHelper.validateQueryString(request);
 
-        setAllowHeaders(request, response);
+        ServletHelper.setAllowHeaders(request, response);
 
-        UserId userId = getUserId(request);
-
+        UserId userId = ServletHelper.getUserId(request);
         String contentType = request.getHeader("Content-Type");
 
         LOG.info("UserId: " + userId);
         LOG.info("Content type: " + contentType);
         LOG.info("Content length: " + request.getHeader("Content-Length"));
 
-        String audioContainer = getAudioContainer(contentType);
-        File audioFile = getNewAudioFile(userId, audioContainer);
+        String fileExtension = getFileExtension(contentType);
+        File audioFile = getNewAudioFile(userId, fileExtension);
 
         writeRequestStream(request.getInputStream(), audioFile);
 
@@ -134,13 +136,15 @@ public class AudioServlet extends HttpServlet {
         response.setHeader("Location", "/audio/" + userId.token + "/" + audioFile.getName());
     }
 
-    private String getAudioContainer(String contentType) {
-        if (contentType.startsWith("audio/webm")) {
-            return "webm";
-        } else if (contentType.startsWith("audio/ogg")) {
-            return "ogg";
+    private String getFileExtension(String contentType) {
+        if (contentType != null) {
+            Matcher matcher = AUDIO_CONTAINER.matcher(contentType);
+            if (matcher.find()) {
+                return "." + matcher.group(1);
+            }
         }
-        return null;
+        LOG.warning("Unrecognised contentType. Defaulting to .ogg.");
+        return ".ogg";
     }
 
     private void writeRequestStream(ServletInputStream inputStream, File audioFile) throws IOException {
@@ -163,81 +167,24 @@ public class AudioServlet extends HttpServlet {
                 }
             }
         }
-        LOG.info("Finished writing " + bytesWritten + " to " + audioFile.getAbsolutePath());
-    }
-
-    private String getRequestURL(HttpServletRequest request) {
-        if (request.getQueryString() != null) {
-            return request.getRequestURL() + "&" + request.getQueryString();
-        } else {
-            return request.getRequestURL().toString();
-        }
-    }
-
-    private void validateQueryString(HttpServletRequest request) {
-        // We always expect POST requests to be made to /audio with no query string
-        if (request.getQueryString() != null) {
-            throw new AudioServerException("Invalid query string: " + request.getPathInfo() + request.getQueryString());
-        }
+        LOG.info("Finished writing " + bytesWritten + " bytes to " + audioFile.getAbsolutePath());
     }
 
     private void validatePath(HttpServletRequest request) {
-        // We always expect POST requests to be made to /audio and nothing else (no trailing / or any other params)
         String path = request.getPathInfo();
-        if (request.getPathInfo() != null) {
+        if (path != null) {
             throw new AudioServerException("Invalid path: " + path);
         }
     }
 
-    private File getUserDir(UserId userId) {
-        File audioDir = AudioServer.getAudioDir();
-        File userDir = new File(audioDir, userId.token);
-        if (!userDir.exists()) {
-            if (!userDir.mkdir()) {
-                throw new AudioServerException("Could not create user dir: " + userDir.getAbsolutePath());
-            }
-        }
-        return userDir;
-    }
-
-    private File getNewAudioFile(UserId userId, String audioContainer) {
-        File userDir = getUserDir(userId);
-        String fileExtension = audioContainer != null ? audioContainer : "ogg";
+    private File getNewAudioFile(UserId userId, String fileExtension) {
+        File userDir = ServletHelper.getUserDir(userId);
         for (int i = 1; i < MAX_FILES_PER_USER; i++) {
-
             File audioFile = new File(userDir, String.format(userId.name + "%02d", i) + fileExtension);
             if (!audioFile.exists()) {
                 return audioFile;
             }
         }
         throw new AudioServerException("User has run out of available files: " + userId);
-    }
-
-    private void setAllowHeaders(HttpServletRequest request, HttpServletResponse response) {
-        String origin = request.getHeader("Origin");
-        String allowedOrigin = null;
-        if (origin != null && (origin.startsWith("http://localhost") || origin.startsWith("https://francoise.fm"))) {
-            allowedOrigin = origin;
-        }
-        if (allowedOrigin != null) {
-            response.addHeader("Access-Control-Allow-Origin", allowedOrigin);
-        }
-        response.addHeader("Access-Control-Allow-Methods", "GET, POST");
-        response.addHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-        response.addHeader("Access-Control-Allow-Credentials", "true");
-        response.addHeader("Vary", "Origin");
-        response.addHeader("Access-Control-Expose-Headers", "Location");
-    }
-
-    private UserId getUserId(HttpServletRequest request) {
-        String authorizationHeader = request.getHeader("Authorization");
-        if (authorizationHeader == null) {
-            throw new AudioServerException("No userId");
-        }
-        Matcher matcher = USER_ID.matcher(authorizationHeader);
-        if (matcher.matches()) {
-            return new UserId(matcher.group(1), matcher.group(2));
-        }
-        throw new AudioServerException("Invalid userId: " + authorizationHeader);
     }
 }

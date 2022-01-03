@@ -24,7 +24,7 @@ body {
 }
 
 header {
-  margin: 30px;
+  margin: 10px;
   text-align: center;
 }
 
@@ -119,12 +119,12 @@ section {
 }
 
 .loginHidden {
-  top: -122px;
+  top: -150px;
   opacity: 0;
 }
 
 .main {
-  top: -122px;
+  top: -150px;
   opacity: 1;
 }
 
@@ -154,9 +154,14 @@ audio {
 }
 
 button.delete {
+  color: white;
   background: #e41e26;
   padding: 0.5rem 0.75rem;
   font-size: 0.8rem;
+}
+
+.radio {
+  color: #e41e26;
 }
 
 .warning {

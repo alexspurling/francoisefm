@@ -2,25 +2,17 @@ package fm.francoisefm;
 
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.IOException;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
 
 public class AudioServer {
 
     private static final Logger LOG = Logger.getLogger("AudioServer");
-
-    private static File audioDir;
 
     public void start() throws Exception {
 
@@ -33,7 +25,7 @@ public class AudioServer {
 
         final Server server = new Server(threadPool);
         ServerConnector connector = new ServerConnector(server);
-        connector.setPort(7625);
+        connector.setPort(9090);
         connector.getConnectionFactories().stream()
                 .filter(connFactory -> connFactory instanceof HttpConnectionFactory)
                 .forEach(hcf -> ((HttpConnectionFactory)hcf).getHttpConfiguration().setSendServerVersion(false));
@@ -41,7 +33,8 @@ public class AudioServer {
         server.setConnectors(new Connector[] {connector});
 
         ServletHandler servletHandler = new ServletHandler();
-        servletHandler.addServletWithMapping(AudioServlet.class, "/audio/*");
+        servletHandler.addServletWithMapping(RecordingsServlet.class, "/audio");
+        servletHandler.addServletWithMapping(RecordingServlet.class, "/audio/*");
         server.setHandler(servletHandler);
         server.setErrorHandler(new CustomErrorHandler());
 
@@ -53,10 +46,6 @@ public class AudioServer {
         server.join();
     }
 
-    public static File getAudioDir() {
-        return audioDir;
-    }
-
     public static void main(String[] args) throws Exception {
         if (args.length != 1) {
             System.out.println("Usage: AudioServer <audio-dir>");
@@ -64,9 +53,7 @@ public class AudioServer {
         }
 
         ensureDirectoryExists(new File("logs"));
-
-        audioDir = new File(args[0]);
-        ensureDirectoryExists(audioDir);
+        ensureDirectoryExists(new File("recordings"));
 
         AudioServer server = new AudioServer();
         server.start();
