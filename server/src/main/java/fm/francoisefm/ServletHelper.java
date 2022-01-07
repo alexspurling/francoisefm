@@ -10,7 +10,7 @@ public class ServletHelper {
 
     public static final String UUID_PATTERN = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}";
     private static final Pattern USER_ID = Pattern.compile("^Bearer (.+)(" + UUID_PATTERN + ")$");
-    private static final String RECORDINGS = "recordings";
+    public static final String RECORDINGS = "recordings";
 
     public static void validateQueryString(HttpServletRequest request) {
         if (request.getQueryString() != null) {
@@ -20,14 +20,10 @@ public class ServletHelper {
 
     public static void setAllowHeaders(HttpServletRequest request, HttpServletResponse response) {
         String origin = request.getHeader("Origin");
-        String allowedOrigin = null;
         if (origin != null && (origin.startsWith("http://localhost") || origin.startsWith("https://francoise.fm"))) {
-            allowedOrigin = origin;
+            response.addHeader("Access-Control-Allow-Origin", origin);
         }
-        if (allowedOrigin != null) {
-            response.addHeader("Access-Control-Allow-Origin", allowedOrigin);
-        }
-        response.addHeader("Access-Control-Allow-Methods", "GET, POST");
+        response.addHeader("Access-Control-Allow-Methods", "GET, POST, DELETE");
         response.addHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
         response.addHeader("Access-Control-Allow-Credentials", "true");
         response.addHeader("Vary", "Origin");
@@ -62,9 +58,5 @@ public class ServletHelper {
             }
         }
         return userDir;
-    }
-
-    public static File getRecordingFile(Recording recording) {
-        return new File(new File(RECORDINGS, recording.token), recording.fileName);
     }
 }

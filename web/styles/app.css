@@ -58,7 +58,7 @@ button {
   width: 100%;
   margin: 10px 0px;
   font-size: 1.5rem;
-  background: #0088cc;
+  background: #009549;
   text-align: center;
   color: white;
   border: none;
@@ -66,11 +66,7 @@ button {
   padding: 0.5rem;
 }
 
-button.ask {
-  background: #009549;
-}
-
-button.ready {
+button.enter {
   background: #0088cc;
 }
 
@@ -101,7 +97,7 @@ input {
  * also show a scrollbar when there are too many clips to show
  * in the available space */
 .soundClips {
-  margin: 40px 0px 0px 0px;
+  margin: 15px 0px 0px 0px;
   flex: 1;
   overflow: auto;
 }

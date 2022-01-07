@@ -1,11 +1,10 @@
 package fm.francoisefm;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,6 +16,15 @@ public class RecordingServlet extends HttpServlet {
     private static final Pattern AUDIO_FILE_PATTERN = Pattern.compile("^/(" + ServletHelper.UUID_PATTERN + ")/([^/]+)$");
 
     private static final Logger LOG = Logger.getLogger("AudioServlet");
+
+    @Override
+    protected void doOptions(HttpServletRequest request, HttpServletResponse response) {
+        LOG.info("OPTIONS: " + ServletHelper.getRequestURL(request));
+
+        ServletHelper.setAllowHeaders(request, response);
+
+        response.setStatus(HttpServletResponse.SC_OK);
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -39,33 +47,60 @@ public class RecordingServlet extends HttpServlet {
         ServletHelper.validateQueryString(request);
         ServletHelper.setAllowHeaders(request, response);
 
-        // It's difficult to get the browser to include the Authorization header when it's
-        // loading an audio file via the <audio> element so just rely on the uniqueness of
-        // the UUID in the path for our audio files
-        // UserId userId = ServletHelper.getUserId(request);
-        // LOG.info("User id: " + userId);
+        // Don't validate Auth header on GET
 
         Recording recording = getRecording(request);
-        // validateRecording(recording, userId);
         validateRecording(recording);
-
         writeRecording(response, recording);
     }
 
+    @Override
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        long startTime = System.currentTimeMillis();
+        LOG.info("DELETE " + ServletHelper.getRequestURL(request));
+
+        try {
+            handleDelete(request, response);
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, "Error handling GET", e);
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        }
+        long timeTaken = System.currentTimeMillis() - startTime;
+        LOG.info("GET (" + timeTaken + "ms): " + response.getStatus());
+    }
+
+    private void handleDelete(HttpServletRequest request, HttpServletResponse response) {
+
+        validatePath(request);
+        ServletHelper.validateQueryString(request);
+        ServletHelper.setAllowHeaders(request, response);
+
+        UserId userId = ServletHelper.getUserId(request);
+        LOG.info("User id: " + userId);
+
+        Recording recording = getRecording(request);
+        if (!recording.token.equals(userId.token)) {
+            throw new AudioServerException("Recording token does not match user token.");
+        }
+        deleteRecording(recording);
+        response.setStatus(HttpServletResponse.SC_OK);
+    }
+
+    private void deleteRecording(Recording recording) {
+        if (!recording.file.delete()) {
+            throw new AudioServerException("Failed to delete recording file " + recording.file.getAbsolutePath());
+        }
+    }
+
     private void writeRecording(HttpServletResponse response, Recording recording) throws IOException {
-        File recordingFile = ServletHelper.getRecordingFile(recording);
-        try (FileInputStream fis = new FileInputStream(recordingFile)) {
+        try (FileInputStream fis = new FileInputStream(recording.file)) {
             fis.transferTo(response.getOutputStream());
         }
     }
 
     private void validateRecording(Recording recording) {
-        // if (!recording.token.equals(userId.token)) {
-        //     throw new AudioServerException("Recording token does not match user token.");
-        // }
-        File recordingFile = ServletHelper.getRecordingFile(recording);
-        if (!recordingFile.exists()) {
-            throw new AudioServerException("Recording file does not exist:" + recordingFile.getAbsolutePath());
+        if (!recording.file.exists()) {
+            throw new AudioServerException("Recording file does not exist:" + recording.file.getAbsolutePath());
         }
     }
 

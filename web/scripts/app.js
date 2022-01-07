@@ -23,13 +23,54 @@ let username = '';
 let userToken = getUserToken();
 
 // visualiser setup - create web audio api context and canvas
-
 let audioCtx;
 const canvasCtx = canvas.getContext("2d");
 
-//main block for doing the audio recording
 
-function addNewClip(audioURL, label) {
+function clickEnter() {
+
+    // turn on the microphone or ask for permission to turn on the microphone
+    const constraints = {audio: true};
+    navigator.mediaDevices.getUserMedia(constraints).then(onMicrophoneReady, onMicrophoneError);
+
+    username = nameInput.value;
+    console.log("Got username", username)
+    if (username) {
+        mainSection.className = "main";
+        radioName = username + " " + calculateFrequency(username + userToken);
+        radio.textContent = radio.textContent.replace("Alex 103.3", radioName);
+        loginSection.className = "loginHidden";
+
+        // Get this user's previously recorded files
+        let headers = {'Authorization': 'Bearer ' + username + userToken};
+        let options = {
+            method: 'GET',
+            headers: headers,
+            mode: 'cors',
+            credentials: 'include'
+        }
+        fetch(serverUrl + '/audio', options)
+            .then(response => {
+                // Expect to get a 404 if user has no recordings
+                if (response.status == 404) {
+                    return;
+                }
+                response.json()
+                    .then(files => {
+                        files.forEach(url => {
+                            let fullUrl = serverUrl + url;
+                            let fileName = getFileFromUrl(url);
+                            addNewClip(fullUrl, fileName, fileName);
+                        });
+                    });
+            }).catch(response => {
+                console.log("Error getting audio files", response);
+            });
+    }
+}
+
+
+function addNewClip(audioURL, label, fileName) {
 
     const clipContainer = document.createElement('article');
     const clipLabel = document.createElement('p');
@@ -42,6 +83,7 @@ function addNewClip(audioURL, label) {
     deleteButton.className = 'delete';
 
     clipLabel.textContent = label;
+    clipLabel.dataset.fileName = fileName;
 
     clipContainer.appendChild(audio);
     clipContainer.appendChild(clipLabel);
@@ -52,9 +94,28 @@ function addNewClip(audioURL, label) {
     audio.controls = true;
     audio.src = audioURL;
 
-    deleteButton.onclick = function(e) {
-        let evtTgt = e.target;
-        evtTgt.parentNode.parentNode.removeChild(evtTgt.parentNode);
+    deleteButton.onclick = function(event) {
+        if (clipLabel.dataset.fileName) {
+            let headers = {'Authorization': 'Bearer ' + username + userToken};
+            let options = {
+                method: 'DELETE',
+                headers: headers,
+                mode: 'cors',
+                credentials: 'include'
+            }
+            fetch(serverUrl + '/audio/' + userToken + '/' + clipLabel.dataset.fileName, options)
+                .then(response => {
+                    console.log('DELETE response', response);
+                    let evtTgt = event.target;
+                    evtTgt.parentNode.parentNode.removeChild(evtTgt.parentNode);
+                }).catch(response => {
+                    console.log('DELETE error response', response)
+                });
+        } else {
+            console.log("Cannot delete from the server because there is no file name for this clip");
+            let evtTgt = event.target;
+            evtTgt.parentNode.parentNode.removeChild(evtTgt.parentNode);
+        }
     }
 
     // Return the clip label so it can be changed later
@@ -65,11 +126,8 @@ function getFileFromUrl(url) {
     return url.substring(url.lastIndexOf('/') + 1)
 }
 
-
 function onMicrophoneReady(stream) {
 
-    record.className = "record ready"
-    record.textContent = "Record";
     microphonePermissionGranted = true;
 
     mediaRecorder = new MediaRecorder(stream);
@@ -100,6 +158,7 @@ function onMicrophoneReady(stream) {
                 console.log('Finished sending audio', response);
                 let fileName = getFileFromUrl(response.headers.get('Location'));
                 clipLabel.textContent = "Saved as " + fileName;
+                clipLabel.dataset.fileName = fileName;
             }).catch(response => {
                 console.log('Error sending audio', response);
                 clipLabel.textContent = "Error saving";
@@ -148,34 +207,13 @@ record.onclick = function() {
     } else {
         mediaRecorder.stop();
         console.log("Recording stopped. MediaRecorder state: ", mediaRecorder.state);
-        record.className = "record ready"
+        record.className = "record"
         record.textContent = "Record";
         recording = false;
     }
 }
 
-if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-    console.log('getUserMedia supported.');
-
-    // If the browser supports it, check if the microphone permission has already been granted.
-    // Safari doesn't support this API to protect against fingerprinting so we have to ask for permission every time.
-    if (navigator.permissions) {
-        let curPermissions = navigator.permissions.query({name: 'microphone'}).then(function(result) {
-            console.log("Microphone permission state", result);
-            if (result.state == 'granted') {
-                // If permission has already been granted, then grab the microphone audio stream
-                const constraints = {audio: true};
-                navigator.mediaDevices.getUserMedia(constraints).then(onMicrophoneReady, onMicrophoneError);
-            }
-        }).catch(e => {
-            // Firefox doesn't support querying for the microphone permission
-            console.log("Error querying microphone permission state", e);
-        });
-    } else {
-        console.log("Permission query not supported");
-    }
-
-} else {
+if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
     console.log('getUserMedia not supported on this browser!');
     warning.style.display = "block"
 }
@@ -267,43 +305,6 @@ function hash(str) {
 // Let's just hash the string and then mod 200
 function calculateFrequency(str) {
     return (Math.abs(hash(str)) % 200 + 870) / 10;
-}
-
-function clickEnter() {
-    username = nameInput.value;
-    console.log("Got username", username)
-    if (username) {
-        mainSection.className = "main";
-        radioName = username + " " + calculateFrequency(username + userToken);
-        radio.textContent = radio.textContent.replace("Alex 103.3", radioName);
-        loginSection.className = "loginHidden";
-
-        // Get this user's previously recorded files
-        let headers = {'Authorization': 'Bearer ' + username + userToken};
-        let options = {
-            method: 'GET',
-            headers: headers,
-            mode: 'cors',
-            credentials: 'include'
-        }
-        fetch(serverUrl + '/audio', options)
-            .then(response => {
-                // Expect to get a 404 if user has no recordings
-                if (response.status == 404) {
-                    return;
-                }
-                response.json()
-                    .then(files => {
-                        files.forEach(url => {
-                            let fullUrl = serverUrl + url;
-                            let fileName = getFileFromUrl(url);
-                            addNewClip(fullUrl, fileName);
-                        });
-                    });
-            }).catch(response => {
-                console.log("Error getting audio files", response);
-            });
-    }
 }
 
 nameInput.addEventListener('keydown', function(event) {
