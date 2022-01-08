@@ -1,0 +1,16 @@
+{
+  "name": "Navn",
+  "welcome": "Velkommen til <span class=\"radio\">{username} {frequency}</span>, din helt egen radiostation på Françoise FM! Optag venligst en besked på op til 5 minutter til Françiose for at sende hende dine bedste ønsker til hendes fødselsdag. Du kan optage så mange beskeder, du vil, og vende tilbage og slette dem til enhver tid.",
+  "nomicrophone": "Mikrofonadgang er ikke understøttet i denne browser :(",
+  "microphoneblocked": "Kunne ikke få mikrofontilladelse :(",
+  "error": "Fejl: {error}",
+  "somethingwrong": "Noget gik galt :(",
+  "enter": "Enter",
+  "record": "Optag",
+  "stop": "Stop",
+  "yourmessages": "Dine beskeder",
+  "savedas": "Gem som {fileName}",
+  "saving": "Gemmer klip...",
+  "errorsaving": "Fejl ved lagring",
+  "delete": "Slet"
+}

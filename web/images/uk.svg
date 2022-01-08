@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="120" height="75" viewBox="0 0 1200 750" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;">
+    <g>
+        <clipPath id="_clip1">
+            <rect x="0" y="0" rx="100" ry="100" width="1200" height="750"/>
+        </clipPath>
+        <g clip-path="url(#_clip1)">
+            <rect x="0" y="0" width="1200" height="750" style="fill:rgb(1,33,105);fill-rule:nonzero;"/>
+            <path d="M0,0L1200,750M1200,0L0,750" style="fill-rule:nonzero;stroke:white;stroke-width:120px;"/>
+            <clipPath id="_clip2">
+                <path d="M600,375L1200,375L1200,750L600,375ZM600,375L600,750L0,750L600,375ZM600,375L0,375L0,0L600,375ZM600,375L600,0L1200,0L600,375Z"/>
+            </clipPath>
+            <g clip-path="url(#_clip2)">
+                <path d="M0,0L1200,750M1200,0L0,750" style="fill-rule:nonzero;stroke:rgb(200,16,46);stroke-width:80px;"/>
+            </g>
+            <path d="M600,0L600,750M0,375L1200,375" style="fill-rule:nonzero;stroke:white;stroke-width:200px;"/>
+            <path d="M600,0L600,750M0,375L1200,375" style="fill-rule:nonzero;stroke:rgb(200,16,46);stroke-width:120px;"/>
+        </g>
+    </g>
+</svg>

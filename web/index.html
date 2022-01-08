@@ -17,27 +17,35 @@
         <img width="600px" src="images/speakerphoto.jpeg">
     </header>
 
-
-    <p class="warning" style="display:none">Media devices is not supported in this browser :(</p>
+    <p class="warning" style="display:none" data-i18n-key="nomicrophone">Microphone access is not supported in this browser :(</p>
 
     <section id="loginSection" class="login">
-        <input type="text" placeholder="Name" class="nameInput">
-        <button id="enter" class="record enter">Enter</button>
+        <input type="text" class="nameInput" data-i18n-key="name" data-i18n-opt='{"attr":"placeholder"}' placeholder="Name">
+        <button id="enter" class="record enter" data-i18n-key="enter">Enter</button>
     </section>
 
     <section id="mainSection" class="mainHidden">
-        <p class="textBlock">Welcome to <span class="radio">Alex 103.3</span>, your very own radio station on
-            Françoise FM! Please record a message up to 5 minutes long to Françiose to send her your best wishes
+        <p class="textBlock" data-i18n-key="welcome">Welcome to <span class="radio">Alex 103.3</span>, your very own radio
+            station on Françoise FM! Please record a message up to 5 minutes long to Françiose to send her your best wishes
             for her birthday. You can record as many messages as you like and come back and delete them at any time.</p>
 
-        <button id="record" class="record">Record</button>
+        <button id="record" class="record" data-i18n-key="record">Record</button>
 
         <canvas class="visualizer" height="60px"></canvas>
 
         <div class="soundClips" style="display:none;">
-            <h3>Your messages</h3>
+            <h3 data-i18n-key="yourmessages">Your messages</h3>
         </div>
     </section>
+
+    <section class="languageSelect">
+        <a onclick="return setLocale('en')" href="#"><img class="languageOption" width="20px" src="images/uk.svg"> English</a>
+        &nbsp;
+        <a onclick="return setLocale('fr')" href="#"><img class="languageOption" width="20px" src="images/france.svg"> Français</a>
+        &nbsp;
+        <a onclick="return setLocale('dk')" href="#"><img class="languageOption" width="20px" src="images/denmark.svg"> Dansk</a>
+    </section>
+
 
 </div>
 <script src="scripts/app.js"></script>

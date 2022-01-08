@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+        "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="120" height="75" viewBox="0 0 1200 750" xmlns="http://www.w3.org/2000/svg" version="1.1">
+    <g>
+        <clipPath id="_clip1">
+            <rect x="0" y="0" rx="100" ry="100" width="1200" height="750"/>
+        </clipPath>
+        <g clip-path="url(#_clip1)">
+            <rect width="1200" height="750" fill="#ED2939"/>
+            <rect width="800" height="750" fill="#fff"/>
+            <rect width="400" height="750" fill="#002395"/>
+        </g>
+    </g>
+</svg>

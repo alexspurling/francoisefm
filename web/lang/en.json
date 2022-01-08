@@ -1,0 +1,16 @@
+{
+  "name": "Name",
+  "welcome": "Welcome to <span class=\"radio\">{username} {frequency}</span>, your very own radio station on Françoise FM! Please record a message up to 5 minutes long to Françiose to send her your best wishes for her birthday. You can record as many messages as you like and come back and delete them at any time.",
+  "nomicrophone": "Microphone access is not supported in this browser :(",
+  "microphoneblocked": "Could not get microphone permission :(",
+  "error": "Error: {error}",
+  "somethingwrong": "Something went wrong :(",
+  "enter": "Enter",
+  "record": "Record",
+  "stop": "Stop",
+  "yourmessages": "Your messages",
+  "savedas": "Saved as {fileName}",
+  "saving": "Saving clip...",
+  "errorsaving": "Error saving",
+  "delete": "Delete"
+}
