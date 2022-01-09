@@ -37,6 +37,7 @@ public class AudioServer {
 
         ServletHandler servletHandler = new ServletHandler();
         servletHandler.addServletWithMapping(RecordingsServlet.class, "/audio");
+        servletHandler.addServletWithMapping(AllRecordingsServlet.class, "/audio/all");
         servletHandler.addServletWithMapping(RecordingServlet.class, "/audio/*");
         server.setHandler(servletHandler);
         server.setErrorHandler(new CustomErrorHandler());

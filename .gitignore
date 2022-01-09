@@ -4,3 +4,4 @@ screenshots/
 target/
 recordings/
 logs/
+server/server.properties

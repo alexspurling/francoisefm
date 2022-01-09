@@ -3,14 +3,37 @@ package fm.francoisefm;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ServletHelper {
 
+    private static final Logger LOG = Logger.getLogger("ServletHelper");
+
     public static final String UUID_PATTERN = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}";
     private static final Pattern USER_ID = Pattern.compile("^Bearer (.+)(" + UUID_PATTERN + ")$");
-    public static final String RECORDINGS = "recordings";
+    public static final Path RECORDINGS = Path.of("recordings");
+    public static final Properties PROPERTIES = readProperties();
+
+    private static Properties readProperties() {
+        Properties prop = new Properties();
+        File propertiesFile = new File("server.properties");
+        if (!propertiesFile.exists()) {
+            propertiesFile = new File("server/server.properties");
+        }
+        try {
+            prop.load(new FileInputStream(propertiesFile));
+        } catch (IOException e) {
+            LOG.log(Level.SEVERE, "Could not load properties file", e);
+        }
+        return prop;
+    }
 
     public static void validateQueryString(HttpServletRequest request) {
         if (request.getQueryString() != null) {
@@ -51,7 +74,7 @@ public class ServletHelper {
     }
 
     public static File getUserDir(UserId userId) {
-        File userDir = new File(RECORDINGS, userId.token);
+        File userDir = RECORDINGS.resolve(userId.token).toFile();
         if (!userDir.exists()) {
             if (!userDir.mkdir()) {
                 throw new AudioServerException("Could not create user dir: " + userDir.getAbsolutePath());

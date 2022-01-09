@@ -21,6 +21,10 @@
         path: "{{ document_root }}/{{ server_name }}/scripts/app.js"
         regexp: 'http://localhost:9090'
         replace: ''
+    - name: Copy properties
+      copy:
+        src: "{{ server_source }}/server.properties"
+        dest: "{{ server_root }}/"
     - name: Copy server jar
       copy:
         src: "{{ server_source }}/target/{{ server_jar }}"

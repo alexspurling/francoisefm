@@ -38,10 +38,18 @@ ansible [core 2.12.1]
 **Install the community general collection**
 ```commandline
 ansible-galaxy collection install community.general
+```
 
+### Create Properties File
+```commandline
+echo "BASIC_AUTH_PASS=foo" > server/server.properties
 ```
 
 ### Run Ansible
+
+```commandline
+cd deploy
+```
 
 **Set up the UFW firewall**
 ```commandline

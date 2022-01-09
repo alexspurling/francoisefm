@@ -1,6 +1,7 @@
 package fm.francoisefm;
 
 import java.io.File;
+import java.nio.file.Path;
 
 import static fm.francoisefm.ServletHelper.RECORDINGS;
 
@@ -13,6 +14,6 @@ public class Recording {
     public Recording(String token, String fileName) {
         this.token = token;
         this.fileName = fileName;
-        this.file = new File(new File(RECORDINGS, token), fileName);
+        this.file = RECORDINGS.resolve(token).resolve(fileName).toFile();
     }
 }
