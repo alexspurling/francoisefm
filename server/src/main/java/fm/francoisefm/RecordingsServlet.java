@@ -9,6 +9,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -72,6 +74,9 @@ public class RecordingsServlet extends HttpServlet {
             return;
         }
 
+        // Important to set the content type before getting the PrintWriter
+        // so that it correctly infers the string encoding as utf-8
+        response.setContentType("application/json");
         PrintWriter writer = response.getWriter();
 
         writer.println("[");
@@ -85,7 +90,6 @@ public class RecordingsServlet extends HttpServlet {
 
         writer.println("]");
 
-        response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_OK);
     }
 
@@ -133,7 +137,11 @@ public class RecordingsServlet extends HttpServlet {
         writeRequestStream(request.getInputStream(), audioFile);
 
         response.setStatus(HttpServletResponse.SC_OK);
-        response.setHeader("Location", "/audio/" + userId.token + "/" + audioFile.getName());
+        response.setHeader("Location", "/audio/" + userId.token + "/" + urlEncode(audioFile.getName()));
+    }
+
+    private String urlEncode(String name) {
+        return URLEncoder.encode(name, StandardCharsets.UTF_8);
     }
 
     private String getFileExtension(String contentType) {

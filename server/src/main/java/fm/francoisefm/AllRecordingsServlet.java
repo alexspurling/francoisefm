@@ -3,15 +3,17 @@ package fm.francoisefm;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.HexFormat;
 import java.util.List;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,6 +44,10 @@ public class AllRecordingsServlet extends HttpServlet {
         validatePath(request);
         ServletHelper.validateQueryString(request);
         basicAuth(request);
+
+        // Important to set the content type before getting the PrintWriter
+        // so that it correctly infers the string encoding as utf-8
+        response.setContentType("application/json");
         PrintWriter writer = response.getWriter();
 
         writer.println("[");
@@ -60,7 +66,6 @@ public class AllRecordingsServlet extends HttpServlet {
 
         writer.println("]");
 
-        response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_OK);
     }
 
@@ -74,13 +79,33 @@ public class AllRecordingsServlet extends HttpServlet {
     }
 
     private void printPath(PrintWriter writer, Path path, boolean printComma) {
+        String hash = calcualteHash(path);
         Path relativePath = ServletHelper.RECORDINGS.relativize(path);
-        writer.print("\"");
+        writer.print("{\"path\": \"");
         writer.print(relativePath);
+        writer.print("\", \"hash\": \"");
+        writer.print(hash);
         if (printComma) {
-            writer.println("\",");
+            writer.println("\"},");
         } else {
-            writer.println("\"");
+            writer.println("\"}");
+        }
+    }
+
+    private String calcualteHash(Path path) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+
+            try (FileInputStream fis = new FileInputStream(path.toFile())) {
+                byte[] byteArray = new byte[1024];
+                int bytesCount;
+                while ((bytesCount = fis.read(byteArray)) != -1) {
+                    digest.update(byteArray, 0, bytesCount);
+                }
+            }
+            return HexFormat.of().formatHex(digest.digest());
+        } catch (NoSuchAlgorithmException | IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

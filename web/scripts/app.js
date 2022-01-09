@@ -123,7 +123,6 @@ function setLocale(newLocale) {
 
 function setDefaultLocale() {
     let l = navigator.language;
-    l = "fr";
     if (/^fr\b/.test(l)) {
         setLocale('fr');
     } else if (/^dk\b/.test(l)) {
@@ -212,7 +211,7 @@ function addNewClip(audioURL, label, fileName) {
                 mode: 'cors',
                 credentials: 'include'
             }
-            fetch(serverUrl + '/audio/' + userToken + '/' + clipLabel.dataset.fileName, options)
+            fetch(encodeURI(serverUrl + '/audio/' + userToken + '/' + clipLabel.dataset.fileName), options)
                 .then(response => {
                     let evtTgt = event.target;
                     evtTgt.parentNode.parentNode.removeChild(evtTgt.parentNode);
@@ -264,7 +263,7 @@ function onMicrophoneReady(stream) {
         fetch(serverUrl + '/audio', options)
             .then(response => {
                 console.log('Finished sending audio', response);
-                let fileName = getFileFromUrl(response.headers.get('Location'));
+                let fileName = getFileFromUrl(decodeURI(response.headers.get('Location')));
                 setText(clipLabel, "Saved as {fileName}", {fileName})
                 clipLabel.dataset.fileName = fileName;
             }).catch(response => {

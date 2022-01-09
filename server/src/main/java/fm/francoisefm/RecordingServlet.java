@@ -165,8 +165,7 @@ public class RecordingServlet extends HttpServlet {
         if (fileSize > Integer.MAX_VALUE) {
             throw new AudioServerException("Audio file is too big!");
         }
-        int fileSizeInt = (int) fileSize;
-        return fileSizeInt;
+        return (int) fileSize;
     }
 
     private void validateRecording(Recording recording) {
@@ -179,7 +178,15 @@ public class RecordingServlet extends HttpServlet {
         String path = request.getPathInfo();
         Matcher matcher = AUDIO_FILE_PATTERN.matcher(path);
         if (matcher.matches()) {
-            return new Recording(matcher.group(1), matcher.group(2));
+            String token = matcher.group(1);
+            String fileName = matcher.group(2);
+            Recording recording = new Recording(token, fileName);
+            if (!recording.file.exists()) {
+                // If we got a URL encoded file name containing a space, then we'll get it
+                // as a +. Try replacing + with " "
+                recording = new Recording(token, fileName.replaceAll("\\+", " "));
+            }
+            return recording;
         }
         throw new AudioServerException("Invalid path");
     }
