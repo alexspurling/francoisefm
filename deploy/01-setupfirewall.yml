@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: francoisefm
   become: true
   tasks:
 

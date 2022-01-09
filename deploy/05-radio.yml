@@ -1,0 +1,11 @@
+---
+- hosts: pi
+  tasks:
+    - synchronize:
+        src: ../radio/
+        dest: ~/radio/
+        rsync_opts:
+          - '--include=*.py'
+          - '--include=server.properties'
+          - '--include=static.wav'
+          - '--exclude=*'

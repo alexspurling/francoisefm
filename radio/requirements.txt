@@ -1,0 +1,4 @@
+requests=2.27.1
+configparser=5.2.0
+simpleaudio=1.0.4
+pydub=0.25.1

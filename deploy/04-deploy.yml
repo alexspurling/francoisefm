@@ -1,7 +1,7 @@
 ---
-- hosts: all
+- hosts: francoisefm
   vars:
-    # This should match the one in 03-nginx.yml
+    # This should match the one in 03-install.yml
     server_name: francoise.fm
     document_root: /var/www
     web_source: ../web

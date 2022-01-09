@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: francoisefm
   become: yes
   tasks:
     - name: Make sure we have a 'wheel' group

@@ -67,3 +67,7 @@ ansible-playbook -i inventory 03-install.yml -u alex
 ```commandline
 ansible-playbook -i inventory 04-deploy.yml -u alex
 ```
+**Deploy the radio**
+```commandline
+ansible-playbook -i inventory 05-radio.yml -u pi
+```

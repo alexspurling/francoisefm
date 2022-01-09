@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: francoisefm
   become: yes
   vars:
     server_name: francoise.fm
