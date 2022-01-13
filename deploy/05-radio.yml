@@ -8,4 +8,6 @@
           - '--include=*.py'
           - '--include=server.properties'
           - '--include=static.wav'
+          - '--include=waveshare/'
+          - '--include=waveshare/*.ttf'
           - '--exclude=*'

@@ -7,7 +7,9 @@ import random
 import time
 
 from audio import Audio
-
+from display import Display
+from encoder import Encoder
+from frequencydial import FrequencyDial
 
 RECORDINGS = "recordings"
 UUID_PATTERN = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
@@ -124,6 +126,22 @@ class Radio:
 audio = Audio()
 radio = Radio(audio)
 radio.sync_files()
+
+display = Display()
+
+
+def frequency_changed(freq):
+    print(f"Frequency: {freq}")
+    display.display_station(freq, "Alex")
+    radio.tune(freq)
+
+
+FrequencyDial(frequency_changed)
+
+
+while True:
+    print("Sleepy time")
+    time.sleep(10)
 
 # radio.tune(1021)
 # time.sleep(3)
