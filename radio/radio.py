@@ -8,6 +8,7 @@ import time
 
 from audio import Audio
 
+
 RECORDINGS = "recordings"
 UUID_PATTERN = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
 AUDIO_FILE_PATTERN = re.compile("^(" + UUID_PATTERN + ")/([^/]+)[0-9][0-9]\\.[\\w]+$")
@@ -17,8 +18,8 @@ class Radio:
 
     def __init__(self, audio: Audio):
         self.server_password = self.get_server_password()
-        self.remote_host = "https://francoise.fm"
-        # self.remote_host = "http://localhost:9090"
+        # self.remote_host = "https://francoise.fm"
+        self.remote_host = "http://localhost:9090"
         self.all_files = []
         self.files_by_frequency = {}
         self.audio = audio
@@ -60,8 +61,6 @@ class Radio:
             os.makedirs(os.path.dirname(recording_file), exist_ok=True)
             with open(recording_file, "wb") as f:
                 f.write(rep.content)
-            # Only necessary for mac os really
-            self.audio.convert(recording_file)
         else:
             print(f"Error writing file: {rep}")
 
@@ -73,7 +72,7 @@ class Radio:
         return h
 
     def calculate_frequency(self, string_to_hash):
-        return str((abs(self.java_hash(string_to_hash)) % 200 + 870) / 10)
+        return abs(self.java_hash(string_to_hash)) % 200 + 870
 
     def calculate_frequencies(self):
         print("Calculating frequencies")
@@ -85,9 +84,9 @@ class Radio:
                 frequency = self.calculate_frequency(username + user_token)
                 if frequency not in self.files_by_frequency:
                     self.files_by_frequency[frequency] = []
-                self.files_by_frequency[frequency].append(file)
-            else:
-                print("Could not parse file: ", file)
+                self.files_by_frequency[frequency].append(os.path.join(RECORDINGS, file["path"]))
+            # else:
+            #     print("Could not parse file: ", file)
         print(self.files_by_frequency)
         for freq in self.files_by_frequency.keys():
             print(freq, self.files_by_frequency[freq])
@@ -104,26 +103,52 @@ class Radio:
                 self.download_file(file["path"])
         self.calculate_frequencies()
 
-    def play(self, freq):
+    def tune(self, freq):
+        print(f"Tuning to {freq}")
         if freq in self.files_by_frequency:
-            recording = random.choice(self.files_by_frequency[freq])
-            recording_file = join(RECORDINGS, recording["path"])
-            self.audio.play(recording_file)
+            freq_files = self.files_by_frequency[freq]
+            random_index = random.randrange(0, len(freq_files))
+            self.audio.play_track(freq_files, random_index)
+        elif (freq + 1) in self.files_by_frequency:
+            freq_files = self.files_by_frequency[freq + 1]
+            random_index = random.randrange(0, len(freq_files))
+            self.audio.play_nearby(freq_files, random_index)
+        elif (freq - 1) in self.files_by_frequency:
+            freq_files = self.files_by_frequency[freq - 1]
+            random_index = random.randrange(0, len(freq_files))
+            self.audio.play_nearby(freq_files, random_index)
         else:
-            self.audio.playstatic()
-            self.audio.playstatic()
+            self.audio.play_static()
 
 
 audio = Audio()
 radio = Radio(audio)
 radio.sync_files()
-radio.play("102.1")
-time.sleep(2)
-radio.play("104.7")
-time.sleep(2)
-radio.play("101.8")
-time.sleep(10)
 
-audio.stop()
+# radio.tune(1021)
+# time.sleep(3)
+# radio.tune(1047)
+# time.sleep(3)
+# radio.tune(1034)
+# time.sleep(2)
+# radio.tune(1035)
+# time.sleep(5)
+# # for i in range(0, 20):
+# #     time.sleep(0.5)
+# #     audio.check_next_track()
+# radio.tune(1047)
+# time.sleep(10)
 
+# audio.stop()
+
+# from frequency import Frequency
+# def frequency_changed(freq):
+#     print("New frequency:", freq)
+#
+# freq = Frequency(frequency_changed)
+#
+#
+# while True:
+#     print("Current frequency:", freq.get_frequency())
+#     time.sleep(5)
 
