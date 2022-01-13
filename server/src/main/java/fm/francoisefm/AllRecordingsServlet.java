@@ -23,7 +23,7 @@ public class AllRecordingsServlet extends HttpServlet {
 
     private static final Logger LOG = Logger.getLogger("RecordingsServlet");
     private static final String USERNAME = "Melville";
-    private static final Set<String> AUDIO_FILE_EXTENSIONS = Set.of("webm", "ogg", "mp4");
+    private static final Set<String> AUDIO_FILE_EXTENSIONS = Set.of("mp3");
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) {

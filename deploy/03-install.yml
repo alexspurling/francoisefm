@@ -51,13 +51,11 @@
       copy:
         src: "{{ server_source }}/francoisefm_server.service"
         dest: "/etc/systemd/system"
-      notify: Restart Java Service
+    - name: Install ffmpeg
+      community.general.snap:
+        name: ffmpeg
   handlers:
     - name: Restart Nginx
       service:
         name: nginx
-        state: restarted
-    - name: Restart Java Service
-      service:
-        name: francoisefm_server
         state: restarted

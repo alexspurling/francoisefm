@@ -114,11 +114,16 @@ function setLocale(newLocale) {
             translations = newTranslations;
             translatePage();
         });
+    return false;
+}
+
+function getEnTranslations() {
+    // We need to fetch the english translations so we can look up english strings
     fetchTranslationsFor('en')
         .then(newTranslations => {
             enTranslations = newTranslations;
+            translations = newTranslations;
         });
-    return false;
 }
 
 function setDefaultLocale() {
@@ -132,6 +137,7 @@ function setDefaultLocale() {
     }
 }
 
+getEnTranslations();
 setDefaultLocale();
 
 function clickEnter() {

@@ -21,6 +21,8 @@ public class ServletHelper {
     public static final Path RECORDINGS = Path.of("recordings");
     public static final Properties PROPERTIES = readProperties();
 
+    public static final AudioConverter AUDIO_CONVERTER = new AudioConverter();
+
     private static Properties readProperties() {
         Properties prop = new Properties();
         File propertiesFile = new File("server.properties");

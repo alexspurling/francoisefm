@@ -27,7 +27,7 @@ public class RecordingsServlet extends HttpServlet {
     private static final Pattern AUDIO_CONTAINER = Pattern.compile("^audio/(\\w+)", Pattern.CASE_INSENSITIVE);
 
     private static final int MAX_FILES_PER_USER = 100;
-    private static final int MAX_FILE_SIZE = 1000000; // 1mb max file size
+    private static final int MAX_FILE_SIZE = 2097152; // 2mb max file size gives about 5 minutes recording
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) {
@@ -135,6 +135,9 @@ public class RecordingsServlet extends HttpServlet {
         File audioFile = getNewAudioFile(userId, fileExtension);
 
         writeRequestStream(request.getInputStream(), audioFile);
+
+        LOG.info("Converting file to mp3: " + audioFile);
+        ServletHelper.AUDIO_CONVERTER.convertToMp3(audioFile);
 
         response.setStatus(HttpServletResponse.SC_OK);
         response.setHeader("Location", "/audio/" + userId.token + "/" + urlEncode(audioFile.getName()));
