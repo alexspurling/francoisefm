@@ -46,7 +46,7 @@ class Display:
 
         # Some other nice fonts to try: http://www.dafont.com/bitmap.php
         self.font = ImageFont.truetype('waveshare/pixel font-7.ttf', 14)
-        self.font2 = ImageFont.truetype('waveshare/pixel font-7.ttf', 18)
+        self.font2 = ImageFont.truetype('waveshare/pixel font-7.ttf', 22)
 
         self.clear()
         self.px = self.image.load()
@@ -56,8 +56,15 @@ class Display:
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
 
     def display_station(self, freq, name):
-        self.draw.text((70, 0), f"{freq}Mhz ", font=self.font, fill=255)
-        self.draw.text((0, 14), f"{name}  ", font=self.font2, fill=255)
+        self.clear()
+
+        freq_str = str(freq / 10)
+        self.draw.text((0, 0), f"{freq_str}Mhz ", font=self.font, fill=255)
+
+        if name:
+            self.draw.text((0, 12), f"{name} ", font=self.font2, fill=255)
+        else:
+            self.draw.text((0, 12), f"- ", font=self.font2, fill=255)
 
         # Display image.
         self.disp.image(self.image)

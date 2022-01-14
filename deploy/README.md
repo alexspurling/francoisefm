@@ -71,3 +71,15 @@ ansible-playbook -i inventory 04-deploy.yml -u alex
 ```commandline
 ansible-playbook -i inventory 05-radio.yml -u pi
 ```
+
+**Notes playing audio on the Raspberry Pi**
+
+If the volume is too low:
+* Bring up terminal, type in `alsamixer`, F6 to choose soundcard "bcm2835 Headphones". Hold up arrow key
+
+The version of pygame that is installed on the Pi (1.9.4) is quite particular about the kinds of sounds it will play. I've found that you must set the required sample rate explicitly and then before to use sound files that match that sample rate. Also, later versions can play mp3 files but this version seems to have trouble. Ogg (encoded with libvorbis) seems to be the most compatible.
+
+```python
+import pygame
+pygame.mixer.init(frequency=44100)
+```

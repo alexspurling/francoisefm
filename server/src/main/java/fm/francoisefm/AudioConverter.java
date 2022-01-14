@@ -26,26 +26,30 @@ public class AudioConverter {
         }
     }
 
-    public void convertToMp3(File recording) {
+    public void convertToOgg(File recording) {
         service.submit(() -> {
             try {
                 String fileIn = recording.getAbsolutePath();
                 int extensionIndex = fileIn.lastIndexOf(".");
                 String fileNoExt = fileIn.substring(0, extensionIndex);
-                convertToMp3(fileIn, fileNoExt + ".mp3", false);
-                convertToMp3(fileIn, fileNoExt + "-lowpass.mp3", true);
+                convertToOgg(fileIn, fileNoExt + ".ogg", false);
+                convertToOgg(fileIn, fileNoExt + "-lowpass.ogg", true);
             } catch(Exception e) {
                 LOG.log(Level.SEVERE, "Error calling ffmpeg", e);
             }
         });
     }
 
-    private void convertToMp3(String fileIn, String fileOut, boolean lowpass) throws IOException {
-        String cmd;
+    private void convertToOgg(String fileIn, String fileOut, boolean lowpass) throws IOException {
+        String[] cmd;
+        // pygame on the raspberry pi can only use one fixed sample rate rather than adapting
+        // to the audio source. This means we have to encode all our audio with the same
+        // sample rate. Later versions of pygame can adapt to the input but it's difficult
+        // to update pygame on the raspberry pi
         if (lowpass) {
-            cmd = "ffmpeg -y -i " + fileIn + " -b:a 128k -af lowpass=f=400 " + fileOut;
+            cmd = new String[] {"ffmpeg", "-y", "-i", fileIn, "-ar", "44100", "-af", "lowpass=f=400", fileOut};
         } else {
-            cmd = "ffmpeg -y -i " + fileIn + " -b:a 128k " + fileOut;
+            cmd = new String[] {"ffmpeg", "-y", "-i", fileIn, "-ar", "44100", fileOut};
         }
 
         Process process = Runtime.getRuntime().exec(cmd);

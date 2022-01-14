@@ -136,8 +136,8 @@ public class RecordingsServlet extends HttpServlet {
 
         writeRequestStream(request.getInputStream(), audioFile);
 
-        LOG.info("Converting file to mp3: " + audioFile);
-        ServletHelper.AUDIO_CONVERTER.convertToMp3(audioFile);
+        LOG.info("Converting file to ogg: " + audioFile + " (file exists: " + audioFile.exists() + ")");
+        ServletHelper.AUDIO_CONVERTER.convertToOgg(audioFile);
 
         response.setStatus(HttpServletResponse.SC_OK);
         response.setHeader("Location", "/audio/" + userId.token + "/" + urlEncode(audioFile.getName()));
@@ -167,8 +167,8 @@ public class RecordingsServlet extends HttpServlet {
         try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(audioFile))) {
             while (!inputStream.isFinished()) {
                 int bytesRead = inputStream.read(buffer);
-                if (bytesRead < 0) {
-                    return;
+                if (bytesRead == -1) {
+                    break;
                 }
                 bos.write(buffer, 0, bytesRead);
                 bytesWritten += bytesRead;

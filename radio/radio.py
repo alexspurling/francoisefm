@@ -8,7 +8,6 @@ import time
 
 from audio import Audio
 from display import Display
-from encoder import Encoder
 from frequencydial import FrequencyDial
 
 RECORDINGS = "recordings"
@@ -18,13 +17,14 @@ AUDIO_FILE_PATTERN = re.compile("^(" + UUID_PATTERN + ")/([^/]+)[0-9][0-9]\\.[\\
 
 class Radio:
 
-    def __init__(self, audio: Audio):
+    def __init__(self, audio, display):
         self.server_password = self.get_server_password()
-        # self.remote_host = "https://francoise.fm"
-        self.remote_host = "http://localhost:9090"
+        self.remote_host = "https://francoise.fm"
+        # self.remote_host = "http://localhost:9090"
         self.all_files = []
         self.files_by_frequency = {}
         self.audio = audio
+        self.display = display
 
     @staticmethod
     def get_server_password():
@@ -82,11 +82,11 @@ class Radio:
             match = AUDIO_FILE_PATTERN.match(file["path"])
             if match:
                 user_token = match.group(1)
-                username = match.group(2)
-                frequency = self.calculate_frequency(username + user_token)
+                name = match.group(2)
+                frequency = self.calculate_frequency(name + user_token)
                 if frequency not in self.files_by_frequency:
-                    self.files_by_frequency[frequency] = []
-                self.files_by_frequency[frequency].append(os.path.join(RECORDINGS, file["path"]))
+                    self.files_by_frequency[frequency] = {"files": [], "name": name}
+                self.files_by_frequency[frequency]['files'].append(os.path.join(RECORDINGS, file["path"]))
             # else:
             #     print("Could not parse file: ", file)
         print(self.files_by_frequency)
@@ -108,40 +108,45 @@ class Radio:
     def tune(self, freq):
         print(f"Tuning to {freq}")
         if freq in self.files_by_frequency:
-            freq_files = self.files_by_frequency[freq]
+            freq_files = self.files_by_frequency[freq]['files']
+            name = self.files_by_frequency[freq]['name']
+            display.display_station(freq, name)
             random_index = random.randrange(0, len(freq_files))
             self.audio.play_track(freq_files, random_index)
         elif (freq + 1) in self.files_by_frequency:
-            freq_files = self.files_by_frequency[freq + 1]
+            freq_files = self.files_by_frequency[freq + 1]['files']
+            display.display_station(freq, None)
             random_index = random.randrange(0, len(freq_files))
             self.audio.play_nearby(freq_files, random_index)
         elif (freq - 1) in self.files_by_frequency:
-            freq_files = self.files_by_frequency[freq - 1]
+            freq_files = self.files_by_frequency[freq - 1]['files']
+            display.display_station(freq, None)
             random_index = random.randrange(0, len(freq_files))
             self.audio.play_nearby(freq_files, random_index)
         else:
+            display.display_station(freq, None)
             self.audio.play_static()
 
 
 audio = Audio()
-radio = Radio(audio)
-radio.sync_files()
-
 display = Display()
+radio = Radio(audio, display)
+
+radio.sync_files()
 
 
 def frequency_changed(freq):
-    print(f"Frequency: {freq}")
-    display.display_station(freq, "Alex")
     radio.tune(freq)
 
 
 FrequencyDial(frequency_changed)
 
+frequency_changed(1000)
 
 while True:
-    print("Sleepy time")
-    time.sleep(10)
+    # Periodically check for the next track to play
+    audio.check_next_track()
+    time.sleep(1)
 
 # radio.tune(1021)
 # time.sleep(3)

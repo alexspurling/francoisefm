@@ -27,7 +27,7 @@ class Audio:
         self.static = pygame.mixer.Channel(0)
         self.static.set_volume(0)
         # Immediately start playing static in a loop but with 0 volume
-        self.static.play(pygame.mixer.Sound("sound/radiotuning.mp3"), -1)
+        self.static.play(pygame.mixer.Sound("sound/radiotuning.ogg"), -1)
         # Create a different channel to play the actual audio
         self.track = pygame.mixer.Channel(1)
         self.track_nearby = pygame.mixer.Channel(2)
@@ -51,7 +51,7 @@ class Audio:
 
             self.fade_static(1, Mode.STATIC)
 
-    def play_track(self, files: [str], index: int):
+    def play_track(self, files, index):
         if self.mode == Mode.OFF:
             self.mode = Mode.PLAYING
 
@@ -108,7 +108,7 @@ class Audio:
             time.sleep(0.01)
         print(f"Now set to: {static_vol}")
 
-    def play_now(self, track_list, index, nearby: bool):
+    def play_now(self, track_list, index, nearby):
         # Play the given file at the index now
         self.track_list = track_list
         self.track_index = index
@@ -127,9 +127,9 @@ class Audio:
             self.track_nearby.set_volume(0)
 
     def check_next_track(self):
-        print("Checking busy status")
         # Check if the last track has ended. if so then play the next in the list
-        if not self.track.get_busy():
+        if self.track_list and not self.track.get_busy() \
+                and (self.mode == Mode.NEARBY or self.mode == Mode.PLAYING):
             print("Everything's quiet. Play the next track")
             self.track_index = (self.track_index + 1) % len(self.track_list)
             self.play_now(self.track_list, self.track_index, self.mode == Mode.NEARBY)

@@ -7,7 +7,8 @@
         rsync_opts:
           - '--include=*.py'
           - '--include=server.properties'
-          - '--include=static.wav'
+          - '--include=sound/'
+          - '--include=sound/radiotuning.ogg'
           - '--include=waveshare/'
           - '--include=waveshare/*.ttf'
           - '--exclude=*'
