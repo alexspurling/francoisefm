@@ -1,6 +1,6 @@
 from enum import Enum
 import pygame
-import time
+import logging
 
 pygame.mixer.init()
 
@@ -38,13 +38,13 @@ class Audio:
     def play_static(self):
         if self.mode == Mode.OFF:
             self.mode = Mode.STATIC
-            print("Tuning to static")
+            logging.info("Tuning to static")
 
             self.fade_static(1, Mode.STATIC)
 
         elif self.mode == Mode.PLAYING or self.mode == Mode.NEARBY:
             self.mode = Mode.STATIC
-            print("Tuning to static")
+            logging.info("Tuning to static")
 
             self.track.stop()
             self.track_nearby.stop()
@@ -117,7 +117,7 @@ class Audio:
 
     def fade_static(self, target, while_mode_is):
         # static_vol = self.static.get_volume()
-        # print(f"static target: {target} cur vol: {static_vol}")
+        # logging.info(f"static target: {target} cur vol: {static_vol}")
         # while static_vol > target and self.mode == while_mode_is:
         #     static_vol -= 0.02
         #     self.static.set_volume(static_vol)
@@ -126,7 +126,7 @@ class Audio:
         #     static_vol += 0.02
         #     self.static.set_volume(static_vol)
         #     time.sleep(0.01)
-        # print(f"Now set to: {static_vol}")
+        # logging.info(f"Now set to: {static_vol}")
         self.static.set_volume(target)
 
     def play_now(self, track_list, index, nearby):
@@ -136,7 +136,7 @@ class Audio:
         file: str = self.track_list[index]
         nearby_file = file[0:file.rindex(".")] + "-lowpass" + file[file.rindex("."):]
 
-        print("Playing track: " + nearby_file if nearby else file)
+        logging.info("Playing track: " + nearby_file if nearby else file)
 
         self.track.play(pygame.mixer.Sound(file))
         self.track_nearby.play(pygame.mixer.Sound(nearby_file))
@@ -151,6 +151,6 @@ class Audio:
         # Check if the last track has ended. if so then play the next in the list
         if self.track_list and not self.track.get_busy() \
                 and (self.mode == Mode.NEARBY or self.mode == Mode.PLAYING):
-            print("Everything's quiet. Play the next track")
+            logging.info("Everything's quiet. Play the next track")
             self.track_index = (self.track_index + 1) % len(self.track_list)
             self.play_now(self.track_list, self.track_index, self.mode == Mode.NEARBY)

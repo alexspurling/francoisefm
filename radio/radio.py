@@ -1,3 +1,6 @@
+from logging.handlers import RotatingFileHandler
+import logging
+
 import requests
 import os.path
 from os.path import join
@@ -5,13 +8,23 @@ import hashlib
 import re
 import random
 import time
-import logging
 
 from audio import Audio
 from display import Display
 from frequencydial import FrequencyDial
 
-logging.basicConfig(filename="radio.log", level=logging.DEBUG, format="[%(asctime)s] [%(levelname)s] %(message)s")
+
+log_formatter = logging.Formatter("[%(asctime)s] [%(levelname)s] %(message)s")
+
+my_handler = RotatingFileHandler(filename="logs/radio.log", mode='a', maxBytes=10*1024*1024,
+                                 backupCount=2, encoding=None, delay=False)
+my_handler.setFormatter(log_formatter)
+my_handler.setLevel(logging.DEBUG)
+
+app_log = logging.getLogger()
+app_log.setLevel(logging.DEBUG)
+app_log.addHandler(my_handler)
+
 
 RECORDINGS = "recordings"
 UUID_PATTERN = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
@@ -93,7 +106,7 @@ class Radio:
         for freq in sorted(self.files_by_frequency.keys()):
             freq_str = f"{freq / 10}"
             name = self.files_by_frequency[freq]["name"]
-            num_files = len(self.files_by_frequency[freq]["files"])
+            num_files = self.files_by_frequency[freq]["files"]
             logging.info(f"{freq_str} Mhz {name}: {num_files} files")
 
     def sync_files(self):

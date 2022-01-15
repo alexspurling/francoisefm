@@ -7,12 +7,17 @@
         rsync_opts:
           - '--include=*.py'
           - '--include=server.properties'
+          - '--include=logs/'
           - '--include=sound/'
           - '--include=sound/radiotuning.ogg'
           - '--include=waveshare/'
           - '--include=waveshare/*.ttf'
           - '--exclude=*'
       notify: Restart Radio
+    - name: Creates directory
+      file:
+        path: ~/radio/logs
+        state: directory
     - name: Create service for radio
       become: yes
       copy:
