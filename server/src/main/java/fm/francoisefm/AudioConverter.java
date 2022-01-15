@@ -64,6 +64,22 @@ public class AudioConverter {
         while ((line = error.readLine()) != null) {
             LOG.info(line);
         }
-        LOG.info("Process exited with code " + process.exitValue());
+        // Wait up to 1 second for the process to exit
+        for (int i = 0; i < 10; i++) {
+            try {
+                if (process.isAlive()) {
+                    Thread.sleep(100);
+                } else {
+                    break;
+                }
+            } catch (InterruptedException e) {
+                // ignore
+            }
+        }
+        if (!process.isAlive()) {
+            LOG.info("Process exited with code " + process.exitValue());
+        } else {
+            LOG.warning("Process did not exit for some reason");
+        }
     }
 }

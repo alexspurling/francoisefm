@@ -67,11 +67,21 @@ class Audio:
         if self.mode == Mode.NEARBY:
             self.mode = Mode.PLAYING
 
-            # Don't try to start the track from the beginning, just adjust the volumes
-            self.track.set_volume(1)
-            self.track_nearby.set_volume(0)
+            # Make sure the current file matches the one that is playing nearby
+            if self.track_list == files:
+                # Don't try to start the track from the beginning, just adjust the volumes
+                self.track.set_volume(1)
+                self.track_nearby.set_volume(0)
+            else:
+                self.play_now(files, index, False)
 
             self.fade_static(0, Mode.PLAYING)
+
+        if self.mode == Mode.PLAYING:
+
+            # Check if we came from another frequency
+            if self.track_list != files:
+                self.play_now(files, index, False)
 
     def play_nearby(self, files: [str], index: int):
         if self.mode == Mode.OFF:
@@ -89,24 +99,35 @@ class Audio:
         if self.mode == Mode.PLAYING:
             self.mode = Mode.NEARBY
 
-            # Don't try to start the track from the beginning, just adjust the volumes
-            self.track.set_volume(0)
-            self.track_nearby.set_volume(1)
+            # Make sure the current file matches the one that is playing nearby
+            if self.track_list == files:
+                # Don't try to start the track from the beginning, just adjust the volumes
+                self.track.set_volume(0)
+                self.track_nearby.set_volume(1)
+            else:
+                self.play_now(files, index, True)
 
             self.fade_static(0.1, Mode.NEARBY)
 
+        if self.mode == Mode.NEARBY:
+
+            # Check if we came from another frequency
+            if self.track_list != files:
+                self.play_now(files, index, True)
+
     def fade_static(self, target, while_mode_is):
-        static_vol = self.static.get_volume()
-        print(f"static target: {target} cur vol: {static_vol}")
-        while static_vol > target and self.mode == while_mode_is:
-            static_vol -= 0.01
-            self.static.set_volume(static_vol)
-            time.sleep(0.01)
-        while static_vol < target and self.mode == while_mode_is:
-            static_vol += 0.01
-            self.static.set_volume(static_vol)
-            time.sleep(0.01)
-        print(f"Now set to: {static_vol}")
+        # static_vol = self.static.get_volume()
+        # print(f"static target: {target} cur vol: {static_vol}")
+        # while static_vol > target and self.mode == while_mode_is:
+        #     static_vol -= 0.02
+        #     self.static.set_volume(static_vol)
+        #     time.sleep(0.01)
+        # while static_vol < target and self.mode == while_mode_is:
+        #     static_vol += 0.02
+        #     self.static.set_volume(static_vol)
+        #     time.sleep(0.01)
+        # print(f"Now set to: {static_vol}")
+        self.static.set_volume(target)
 
     def play_now(self, track_list, index, nearby):
         # Play the given file at the index now

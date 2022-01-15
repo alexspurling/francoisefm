@@ -90,7 +90,7 @@ class Radio:
                     self.files_by_frequency[frequency] = {"files": set(), "name": name}
                 self.files_by_frequency[frequency]['files'].add(os.path.join(RECORDINGS, file["path"]))
         logging.info(f"Calculated {len(self.files_by_frequency)} frequencies")
-        for freq in self.files_by_frequency.keys():
+        for freq in sorted(self.files_by_frequency.keys()):
             freq_str = f"{freq / 10}"
             name = self.files_by_frequency[freq]["name"]
             num_files = len(self.files_by_frequency[freq]["files"])
@@ -108,24 +108,31 @@ class Radio:
                 self.download_file(file["path"])
         self.calculate_frequencies()
 
-    def tune(self, freq):
+    def play(self, freq, target_freq):
         logging.info(f"Tuning to {freq}")
-        if freq in self.files_by_frequency:
-            freq_files = self.files_by_frequency[freq]['files']
-            name = self.files_by_frequency[freq]['name']
+        start_time = time.time()
+        freq_files = list(self.files_by_frequency[target_freq]["files"])
+        name = self.files_by_frequency[target_freq]["name"]
+        random_index = random.randrange(0, len(freq_files))
+        if freq == target_freq:
+            logging.info(f"Displaying {freq} {name}")
             display.display_station(freq, name)
-            random_index = random.randrange(0, len(freq_files))
+            logging.info(f"Playing {freq}")
             self.audio.play_track(freq_files, random_index)
+        else:
+            logging.info(f"Displaying {freq}")
+            display.display_station(freq, None)
+            logging.info(f"Playing {freq} (nearby)")
+            self.audio.play_nearby(freq_files, random_index)
+        logging.info(f"Finished playing {freq} ({time.time() - start_time}ms)")
+
+    def tune(self, freq):
+        if freq in self.files_by_frequency:
+            self.play(freq, freq)
         elif (freq + 1) in self.files_by_frequency:
-            freq_files = self.files_by_frequency[freq + 1]['files']
-            display.display_station(freq, None)
-            random_index = random.randrange(0, len(freq_files))
-            self.audio.play_nearby(freq_files, random_index)
+            self.play(freq, freq + 1)
         elif (freq - 1) in self.files_by_frequency:
-            freq_files = self.files_by_frequency[freq - 1]['files']
-            display.display_station(freq, None)
-            random_index = random.randrange(0, len(freq_files))
-            self.audio.play_nearby(freq_files, random_index)
+            self.play(freq, freq - 1)
         else:
             display.display_station(freq, None)
             self.audio.play_static()
@@ -137,6 +144,7 @@ radio = Radio(audio, display)
 
 
 def frequency_changed(freq):
+    logging.info(f"Freq changed to {freq}")
     radio.tune(freq)
 
 
@@ -154,6 +162,6 @@ while True:
             audio.check_next_track()
             time.sleep(1)
     except Exception as e:
-        logging.error(f"Error! {e}")
+        logging.exception(f"Error! {e}", exc_info=e)
         logging.error("Sleeping for 15s before trying again")
         time.sleep(15)

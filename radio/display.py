@@ -5,7 +5,9 @@
 #            =                |   GPIO25   RESET    GREY
 # GPIO11  SPI CLK   GREEN     |   GPIO08   CS       BLUE
 #            ...              |            =
-
+import logging
+import threading
+import time
 import waveshare.SPI as SPI
 import waveshare.SSD1305 as SSD1305
 
@@ -51,30 +53,59 @@ class Display:
         self.clear()
         self.px = self.image.load()
 
+        self.stop_thread = True
+        self.thread_stopped = True
+
     def clear(self):
         # Draw a black filled box to clear the image.
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
 
-    def display_station(self, freq, name):
+    def display_station_at_x(self, freq, name, x):
         self.clear()
 
         freq_str = str(freq / 10)
-        self.draw.text((0, 0), f"{freq_str}Mhz ", font=self.font, fill=255)
 
         if name:
-            self.draw.text((0, 12), f"{name} ", font=self.font2, fill=255)
+            self.draw.text((40, 0), f"{freq_str}Mhz ", font=self.font, fill=255)
+            self.draw.text((x, 12), f"{name} ", font=self.font2, fill=255)
         else:
-            self.draw.text((0, 12), f"- ", font=self.font2, fill=255)
+            self.draw.text((25, 0), f"{freq_str}Mhz ", font=self.font2, fill=255)
 
         # Display image.
         self.disp.image(self.image)
         self.disp.display()
 
+    def display_name_thread(self, freq, name):
+        try:
+            x = 0
 
-    # def sine_wave(self):
-    #     for x in range(0, 128):
-    #         y = int(math.sin((x + self.count) / (128 / (2 * math.pi))) * 8 + 23)
-    #         # print(x, y)
-    #         self.px[x, y] = 255
+            size = self.font2.getsize(name)
+            while not self.stop_thread:
+                self.display_station_at_x(freq, name, x)
+
+                x -= 1
+                if x < -size[0]:
+                    x = 128
+
+                time.sleep(0.01)
+        except Exception as e:
+            logging.exception("Error in display thread", exc_info=e)
+        self.thread_stopped = True
+
+    def display_station(self, freq, name):
+        self.stop_thread = True
+        # Wait until the thread has stopped before starting a new one
+        while not self.thread_stopped:
+            time.sleep(0.1)
+
+        # start new thread if name is > 11 chars so we can animate the display
+        if name and len(name) > 11:
+            t = threading.Thread(target=self.display_name_thread, args=(freq, name))
+            self.stop_thread = False
+            self.thread_stopped = False
+            t.start()
+            # self.display_station_at_x(freq, name, 10)
+        else:
+            self.display_station_at_x(freq, name, 0)
 
 # "Afgjqwyç,ç,Çâêîôûé,àèùëïü,AaÅåÆæFæfHhåJjådKkåLælMæmNænØøOoSæsXæksYyZsæt,"
