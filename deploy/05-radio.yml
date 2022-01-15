@@ -12,3 +12,16 @@
           - '--include=waveshare/'
           - '--include=waveshare/*.ttf'
           - '--exclude=*'
+      notify: Restart Radio
+    - name: Create service for radio
+      become: yes
+      copy:
+        src: "../radio/francoisefm_radio.service"
+        dest: "/etc/systemd/system"
+      notify: Restart Radio
+  handlers:
+    - name: Restart Radio
+      become: yes
+      service:
+        name: francoisefm_radio
+        state: restarted

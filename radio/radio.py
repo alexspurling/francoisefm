@@ -5,10 +5,13 @@ import hashlib
 import re
 import random
 import time
+import logging
 
 from audio import Audio
 from display import Display
 from frequencydial import FrequencyDial
+
+logging.basicConfig(filename="radio.log", level=logging.DEBUG, format="[%(asctime)s] [%(levelname)s] %(message)s")
 
 RECORDINGS = "recordings"
 UUID_PATTERN = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
@@ -38,8 +41,8 @@ class Radio:
         url = f"{self.remote_host}/audio/all"
         username = "Melville"
         rep = requests.get(url, auth=(username, self.server_password))
-        print(rep.status_code)
-        print(rep)
+        logging.info(rep.status_code)
+        logging.info(rep)
         return rep.json()
 
     def hash(self, file):
@@ -59,12 +62,12 @@ class Radio:
         url = f"{self.remote_host}/audio/" + file
         rep = requests.get(url)
         if rep.status_code == 200:
-            print(f"Got file {file} ({len(rep.content)} bytes). Saving to {recording_file}")
+            logging.info(f"Got file {file} ({len(rep.content)} bytes). Saving to {recording_file}")
             os.makedirs(os.path.dirname(recording_file), exist_ok=True)
             with open(recording_file, "wb") as f:
                 f.write(rep.content)
         else:
-            print(f"Error writing file: {rep}")
+            logging.info(f"Error writing file: {rep}")
 
     @staticmethod
     def java_hash(str):
@@ -77,7 +80,6 @@ class Radio:
         return abs(self.java_hash(string_to_hash)) % 200 + 870
 
     def calculate_frequencies(self):
-        print("Calculating frequencies")
         for file in self.all_files:
             match = AUDIO_FILE_PATTERN.match(file["path"])
             if match:
@@ -85,28 +87,29 @@ class Radio:
                 name = match.group(2)
                 frequency = self.calculate_frequency(name + user_token)
                 if frequency not in self.files_by_frequency:
-                    self.files_by_frequency[frequency] = {"files": [], "name": name}
-                self.files_by_frequency[frequency]['files'].append(os.path.join(RECORDINGS, file["path"]))
-            # else:
-            #     print("Could not parse file: ", file)
-        print(self.files_by_frequency)
+                    self.files_by_frequency[frequency] = {"files": set(), "name": name}
+                self.files_by_frequency[frequency]['files'].add(os.path.join(RECORDINGS, file["path"]))
+        logging.info(f"Calculated {len(self.files_by_frequency)} frequencies")
         for freq in self.files_by_frequency.keys():
-            print(freq, self.files_by_frequency[freq])
+            freq_str = f"{freq / 10}"
+            name = self.files_by_frequency[freq]["name"]
+            num_files = len(self.files_by_frequency[freq]["files"])
+            logging.info(f"{freq_str} Mhz {name}: {num_files} files")
 
     def sync_files(self):
         self.all_files = self.get_all_files()
-        print("Got all files: ", self.all_files)
+        logging.info(f"Got {len(self.all_files)} files")
         for file in self.all_files:
             recording_file = join(RECORDINGS, file["path"])
             # Check if we have already downloaded this file
             # if so, then check if the md5 hash matches
-            print(f"Got {recording_file} local hash: {self.hash(recording_file)} remote hash: {file['hash']}")
             if not os.path.exists(recording_file) or self.hash(recording_file) != file['hash']:
+                logging.info(f"Got new file {recording_file} local hash: {self.hash(recording_file)} remote hash: {file['hash']}")
                 self.download_file(file["path"])
         self.calculate_frequencies()
 
     def tune(self, freq):
-        print(f"Tuning to {freq}")
+        logging.info(f"Tuning to {freq}")
         if freq in self.files_by_frequency:
             freq_files = self.files_by_frequency[freq]['files']
             name = self.files_by_frequency[freq]['name']
@@ -132,8 +135,6 @@ audio = Audio()
 display = Display()
 radio = Radio(audio, display)
 
-radio.sync_files()
-
 
 def frequency_changed(freq):
     radio.tune(freq)
@@ -144,34 +145,15 @@ FrequencyDial(frequency_changed)
 frequency_changed(1000)
 
 while True:
-    # Periodically check for the next track to play
-    audio.check_next_track()
-    time.sleep(1)
+    try:
+        # Sync files every 60 seconds
+        radio.sync_files()
 
-# radio.tune(1021)
-# time.sleep(3)
-# radio.tune(1047)
-# time.sleep(3)
-# radio.tune(1034)
-# time.sleep(2)
-# radio.tune(1035)
-# time.sleep(5)
-# # for i in range(0, 20):
-# #     time.sleep(0.5)
-# #     audio.check_next_track()
-# radio.tune(1047)
-# time.sleep(10)
-
-# audio.stop()
-
-# from frequency import Frequency
-# def frequency_changed(freq):
-#     print("New frequency:", freq)
-#
-# freq = Frequency(frequency_changed)
-#
-#
-# while True:
-#     print("Current frequency:", freq.get_frequency())
-#     time.sleep(5)
-
+        for i in range(0, 60):
+            # Periodically check for the next track to play
+            audio.check_next_track()
+            time.sleep(1)
+    except Exception as e:
+        logging.error(f"Error! {e}")
+        logging.error("Sleeping for 15s before trying again")
+        time.sleep(15)

@@ -1,0 +1,16 @@
+[Unit]
+Description=Run francoisefm radio
+DefaultDependencies=no
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/radio/
+ExecStart=python3 radio.py
+TimeoutStopSec=10
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
