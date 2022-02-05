@@ -1,29 +1,33 @@
 package fm.francoisefm;
 
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.FileInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-import java.util.HexFormat;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class AllRecordingsServlet extends HttpServlet {
 
-    private static final Logger LOG = Logger.getLogger("RecordingsServlet");
-    private static final String USERNAME = "Melville";
-    private static final Set<String> AUDIO_FILE_EXTENSIONS = Set.of("ogg");
+    private static final Logger LOG = Logger.getLogger("AllRecordingsServlet");
+
+    private static final Pattern AUDIO_CONTAINER = Pattern.compile("^audio/(\\w+)", Pattern.CASE_INSENSITIVE);
+
+    private static final int MAX_FILES_PER_USER = 100;
+    private static final int MAX_FILE_SIZE = 2097152; // 2mb max file size gives about 5 minutes recording
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) {
@@ -41,9 +45,34 @@ public class AllRecordingsServlet extends HttpServlet {
     }
 
     private void handleGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+
         validatePath(request);
         ServletHelper.validateQueryString(request);
-        basicAuth(request);
+        ServletHelper.setAllowHeaders(request, response);
+
+        UserId userId = ServletHelper.getUserId(request);
+        LOG.info("User id: " + userId);
+
+        File userDir = ServletHelper.getUserDir(userId);
+        if (!userDir.exists()) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+        File[] userFiles = userDir.listFiles();
+        if (userFiles == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+        // Make sure we only look for files that match the logged-in user's name
+        List<File> ownUserFiles = Arrays.stream(userFiles)
+                .sorted(Comparator.comparingLong(File::lastModified))
+                .filter((f) -> f.getName().matches("^" + Pattern.quote(userId.name) + "[0-9][0-9].\\w+$"))
+                .collect(Collectors.toList());
+
+        if (ownUserFiles.isEmpty()) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
 
         // Important to set the content type before getting the PrintWriter
         // so that it correctly infers the string encoding as utf-8
@@ -52,77 +81,104 @@ public class AllRecordingsServlet extends HttpServlet {
 
         writer.println("[");
 
-        List<Path> allFiles = Files.walk(ServletHelper.RECORDINGS)
-                .filter(Files::isRegularFile)
-                .filter(p -> AUDIO_FILE_EXTENSIONS.contains(extension(p)))
-                .collect(Collectors.toList());
-
-        if (!allFiles.isEmpty()) {
-            for (int i = 0; i < allFiles.size() - 1; i++) {
-                printPath(writer, allFiles.get(i), true);
-            }
-            printPath(writer, allFiles.get(allFiles.size() - 1), false);
+        // Awkward iteration through all but the last file
+        for (int i = 0; i < ownUserFiles.size() - 1; i++) {
+            writer.println("  \"/audio/" + userId.token + "/" + ownUserFiles.get(i).getName() + "\",");
         }
+        // So that the last file does not include a comma
+        writer.println("  \"/audio/" + userId.token + "/" + ownUserFiles.get(ownUserFiles.size() - 1).getName() + "\"");
 
         writer.println("]");
 
         response.setStatus(HttpServletResponse.SC_OK);
     }
 
-    private String extension(Path p) {
-        String fileName = p.toFile().getName();
-        int dotPos = fileName.indexOf(".");
-        if (dotPos == -1) {
-            return "";
-        }
-        return fileName.substring(dotPos + 1);
+    @Override
+    protected void doOptions(HttpServletRequest request, HttpServletResponse response) {
+        LOG.info("OPTIONS: " + ServletHelper.getRequestURL(request));
+
+        ServletHelper.setAllowHeaders(request, response);
+
+        response.setStatus(HttpServletResponse.SC_OK);
     }
 
-    private void printPath(PrintWriter writer, Path path, boolean printComma) {
-        String hash = calcualteHash(path);
-        Path relativePath = ServletHelper.RECORDINGS.relativize(path);
-        writer.print("{\"path\": \"");
-        writer.print(relativePath);
-        writer.print("\", \"hash\": \"");
-        writer.print(hash);
-        if (printComma) {
-            writer.println("\"},");
-        } else {
-            writer.println("\"}");
-        }
-    }
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) {
+        long startTime = System.currentTimeMillis();
+        LOG.info("POST: " + ServletHelper.getRequestURL(request));
 
-    private String calcualteHash(Path path) {
         try {
-            MessageDigest digest = MessageDigest.getInstance("MD5");
+            handlePost(request, response);
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, "Error handling POST", e);
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        }
+        long timeTaken = System.currentTimeMillis() - startTime;
+        LOG.info("POST (" + timeTaken + "ms): " + response.getStatus());
+    }
 
-            try (FileInputStream fis = new FileInputStream(path.toFile())) {
-                byte[] byteArray = new byte[1024];
-                int bytesCount;
-                while ((bytesCount = fis.read(byteArray)) != -1) {
-                    digest.update(byteArray, 0, bytesCount);
+    private void handlePost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+
+        validatePath(request);
+        ServletHelper.validateQueryString(request);
+
+        ServletHelper.setAllowHeaders(request, response);
+
+        UserId userId = ServletHelper.getUserId(request);
+        String contentType = request.getHeader("Content-Type");
+
+        LOG.info("UserId: " + userId);
+        LOG.info("Content type: " + contentType);
+        LOG.info("Content length: " + request.getHeader("Content-Length"));
+
+        String fileExtension = getFileExtension(contentType);
+        File audioFile = getNewAudioFile(userId, fileExtension);
+
+        writeRequestStream(request.getInputStream(), audioFile);
+
+        LOG.info("Converting file to ogg: " + audioFile + " (file exists: " + audioFile.exists() + ")");
+        ServletHelper.AUDIO_CONVERTER.convertToOgg(audioFile);
+
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setHeader("Location", "/audio/" + userId.token + "/" + urlEncode(audioFile.getName()));
+    }
+
+    private String urlEncode(String name) {
+        return URLEncoder.encode(name, StandardCharsets.UTF_8);
+    }
+
+    private String getFileExtension(String contentType) {
+        if (contentType != null) {
+            Matcher matcher = AUDIO_CONTAINER.matcher(contentType);
+            if (matcher.find()) {
+                return "." + matcher.group(1);
+            }
+        }
+        LOG.warning("Unrecognised contentType. Defaulting to .ogg.");
+        return ".ogg";
+    }
+
+    private void writeRequestStream(ServletInputStream inputStream, File audioFile) throws IOException {
+        byte[] buffer = new byte[10000];
+
+        LOG.info("Writing to " + audioFile.getAbsolutePath());
+
+        int bytesWritten = 0;
+        try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(audioFile))) {
+            while (!inputStream.isFinished()) {
+                int bytesRead = inputStream.read(buffer);
+                if (bytesRead == -1) {
+                    break;
+                }
+                bos.write(buffer, 0, bytesRead);
+                bytesWritten += bytesRead;
+                if (bytesWritten >= MAX_FILE_SIZE) {
+                    LOG.warning("Tried to write more than maximum allowed file size");
+                    break;
                 }
             }
-            return HexFormat.of().formatHex(digest.digest());
-        } catch (NoSuchAlgorithmException | IOException e) {
-            throw new RuntimeException(e);
         }
-    }
-
-    private void basicAuth(HttpServletRequest request) {
-        String authorizationHeader = request.getHeader("Authorization");
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Basic ")) {
-            throw new AudioServerException("Unauthorised");
-        }
-        String basicAuthPass = ServletHelper.PROPERTIES.getProperty("BASIC_AUTH_PASS");
-        byte[] expectedUsernameAndPassword = (USERNAME + ":" + basicAuthPass).getBytes(StandardCharsets.UTF_8);
-        String encodedUsernameAndPassword = authorizationHeader.substring("Basic ".length());
-        byte[] decodedUsernameAndPassword = Base64.getDecoder().decode(encodedUsernameAndPassword);
-
-        if (!MessageDigest.isEqual(expectedUsernameAndPassword, decodedUsernameAndPassword)) {
-            LOG.warning("Received incorrect basic auth password: " + new String(decodedUsernameAndPassword));
-            throw new AudioServerException("Unauthorised basic auth attempt");
-        }
+        LOG.info("Finished writing " + bytesWritten + " bytes to " + audioFile.getAbsolutePath());
     }
 
     private void validatePath(HttpServletRequest request) {
@@ -132,4 +188,14 @@ public class AllRecordingsServlet extends HttpServlet {
         }
     }
 
+    private File getNewAudioFile(UserId userId, String fileExtension) {
+        File userDir = ServletHelper.getUserDir(userId);
+        for (int i = 1; i < MAX_FILES_PER_USER; i++) {
+            File audioFile = new File(userDir, String.format(userId.name + "%02d", i) + fileExtension);
+            if (!audioFile.exists()) {
+                return audioFile;
+            }
+        }
+        throw new AudioServerException("User has run out of available files: " + userId);
+    }
 }

@@ -1,6 +1,7 @@
 from enum import Enum
 import pygame
 import logging
+import os
 
 pygame.mixer.init()
 
@@ -141,8 +142,18 @@ class Audio:
         logging.debug("File  : " + file)
         logging.debug("Nearby: " + nearby_file)
 
-        self.track.play(pygame.mixer.Sound(file))
-        self.track_nearby.play(pygame.mixer.Sound(nearby_file))
+        # Play both the file and nearby file simultaneously but set
+        # their volumes according to the one we want to hear
+        if os.path.exists(file):
+            self.track.play(pygame.mixer.Sound(file))
+        else:
+            logging.error(f"File not found: {file}")
+
+        if os.path.exists(nearby_file):
+            self.track_nearby.play(pygame.mixer.Sound(nearby_file))
+        else:
+            logging.error(f"File not found: {nearby_file}")
+
         if nearby:
             self.track.set_volume(0)
             self.track_nearby.set_volume(1)

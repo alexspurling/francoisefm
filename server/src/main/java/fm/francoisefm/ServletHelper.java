@@ -19,6 +19,7 @@ public class ServletHelper {
     public static final String UUID_PATTERN = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}";
     private static final Pattern USER_ID = Pattern.compile("^Bearer (.+)(" + UUID_PATTERN + ")$");
     public static final Path RECORDINGS = Path.of("recordings");
+    public static final Path CONVERTED = Path.of("converted");
     public static final Properties PROPERTIES = readProperties();
 
     public static final AudioConverter AUDIO_CONVERTER = new AudioConverter();

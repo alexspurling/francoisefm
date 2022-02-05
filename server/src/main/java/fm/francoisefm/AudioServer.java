@@ -13,6 +13,9 @@ import java.io.InputStream;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
+import static fm.francoisefm.ServletHelper.CONVERTED;
+import static fm.francoisefm.ServletHelper.RECORDINGS;
+
 public class AudioServer {
 
     private static final Logger LOG = Logger.getLogger("AudioServer");
@@ -36,9 +39,10 @@ public class AudioServer {
         server.setConnectors(new Connector[] {connector});
 
         ServletHandler servletHandler = new ServletHandler();
-        servletHandler.addServletWithMapping(RecordingsServlet.class, "/audio");
-        servletHandler.addServletWithMapping(AllRecordingsServlet.class, "/audio/all");
+        servletHandler.addServletWithMapping(AllRecordingsServlet.class, "/audio");
         servletHandler.addServletWithMapping(RecordingServlet.class, "/audio/*");
+        servletHandler.addServletWithMapping(AllStationsServlet.class, "/audio/radio");
+        servletHandler.addServletWithMapping(RadioServlet.class, "/audio/radio/*");
         server.setHandler(servletHandler);
         server.setErrorHandler(new CustomErrorHandler());
 
@@ -78,7 +82,8 @@ public class AudioServer {
     public static void main(String[] args) throws Exception {
         configureLogger();
         ensureDirectoryExists(new File("logs"));
-        ensureDirectoryExists(new File("recordings"));
+        ensureDirectoryExists(RECORDINGS.toFile());
+        ensureDirectoryExists(CONVERTED.toFile());
 
         AudioServer server = new AudioServer();
         server.start();

@@ -2,6 +2,7 @@
 import Adafruit_ADS1x15
 
 import time
+import logging
 
 
 class AnalogueDial:
@@ -10,6 +11,9 @@ class AnalogueDial:
 
         self.adc = Adafruit_ADS1x15.ADS1115()
         self.GAIN = 1
+
+        adafruit_logger = logging.getLogger('Adafruit_I2C.Device.Bus.1.Address.0X48')
+        adafruit_logger.setLevel(logging.INFO)
 
         # The ADC returns a value between 4450 and 26300
         # 4450 = low resistance; i.e. "high" volume

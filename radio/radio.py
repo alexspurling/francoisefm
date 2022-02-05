@@ -52,7 +52,7 @@ class Radio:
         raise Exception("Unable to find server password")
 
     def get_all_files(self):
-        url = f"{self.remote_host}/audio/all"
+        url = f"{self.remote_host}/audio/radio"
         username = "Melville"
         rep = requests.get(url, auth=(username, self.server_password))
         logging.info(rep.status_code)
@@ -73,7 +73,7 @@ class Radio:
 
     def download_file(self, file):
         recording_file = join(RECORDINGS, file)
-        url = f"{self.remote_host}/audio/" + file
+        url = f"{self.remote_host}/audio/radio/" + file
         rep = requests.get(url)
         if rep.status_code == 200:
             logging.info(f"Got file {file} ({len(rep.content)} bytes). Saving to {recording_file}")
@@ -94,6 +94,7 @@ class Radio:
         return abs(self.java_hash(string_to_hash)) % 200 + 870
 
     def calculate_frequencies(self):
+        self.files_by_frequency = {}
         for file in self.all_files:
             match = AUDIO_FILE_PATTERN.match(file["path"])
             if match:
@@ -124,7 +125,7 @@ class Radio:
         self.calculate_frequencies()
 
     def play(self, freq, target_freq):
-        logging.info(f"Tuning to {freq}")
+        logging.info(f"Tuning to {freq} (target: {target_freq})")
         freq_files = self.files_by_frequency[target_freq]
         random_index = random.randrange(0, len(freq_files))
         display.set_freq(freq)
@@ -164,20 +165,7 @@ dial = AnalogueDial()
 # frequency_changed(1000)
 
 
-def read_frequency():
-    freq = 1000
-    while True:
-        new_freq, _ = dial.get_freq()
-
-        if new_freq != freq:
-            radio.tune(new_freq)
-            freq = new_freq
-
-        time.sleep(1 / 10)
-
-
-t = threading.Thread(target=read_frequency)
-t.start()
+freq = 1
 
 while True:
     try:
@@ -185,10 +173,17 @@ while True:
         radio.sync_files()
 
         for i in range(0, 300):
+            for j in range(0, 10):
+                new_freq, _ = dial.get_freq()
+                if new_freq != freq:
+                    freq = new_freq
+                    radio.tune(new_freq)
+
+                time.sleep(1 / 10)
+
             # Periodically check for the next track to play
             audio.check_next_track()
-            time.sleep(1)
     except Exception as e:
         logging.exception(f"Error! {e}", exc_info=e)
-        logging.error("Sleeping for 15s before trying again")
-        time.sleep(15)
+        logging.error("Sleeping for 5s before trying again")
+        time.sleep(5)

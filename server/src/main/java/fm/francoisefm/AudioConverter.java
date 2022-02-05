@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.FileHandler;
@@ -30,10 +31,18 @@ public class AudioConverter {
         service.submit(() -> {
             try {
                 String fileIn = recording.getAbsolutePath();
-                int extensionIndex = fileIn.lastIndexOf(".");
-                String fileNoExt = fileIn.substring(0, extensionIndex);
-                convertToOgg(fileIn, fileNoExt + ".ogg", false);
-                convertToOgg(fileIn, fileNoExt + "-lowpass.ogg", true);
+                String outDir = recording.getParentFile().getAbsolutePath()
+                        .replace("recordings", "converted");
+                new File(outDir).mkdirs();
+
+                int extensionIndex = recording.getName().lastIndexOf(".");
+                String fileNoExt = recording.getName().substring(0, extensionIndex);
+
+                String oggPath = outDir + "/" + fileNoExt + ".ogg";
+                String lowPassPath = outDir + "/" + fileNoExt + "-lowpass.ogg";
+
+                convertToOgg(fileIn, oggPath, false);
+                convertToOgg(fileIn, lowPassPath, true);
             } catch(Exception e) {
                 LOG.log(Level.SEVERE, "Error calling ffmpeg", e);
             }

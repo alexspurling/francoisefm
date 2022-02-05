@@ -11,6 +11,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -21,7 +22,7 @@ public class RecordingServlet extends HttpServlet {
     private static final Pattern AUDIO_FILE_PATTERN = Pattern.compile("^/(" + ServletHelper.UUID_PATTERN + ")/([^/]+)$");
     private static final Pattern RANGE_HEADER_PATTERN = Pattern.compile("^bytes=([0-9]+)-([0-9]+)$");
 
-    private static final Logger LOG = Logger.getLogger("AudioServlet");
+    private static final Logger LOG = Logger.getLogger("RecordingServlet");
 
     @Override
     protected void doOptions(HttpServletRequest request, HttpServletResponse response) {
@@ -174,17 +175,22 @@ public class RecordingServlet extends HttpServlet {
         }
     }
 
+    public Path getRecordingLocation() {
+        return ServletHelper.RECORDINGS;
+    }
+
     private Recording getRecording(HttpServletRequest request) {
         String path = request.getPathInfo();
         Matcher matcher = AUDIO_FILE_PATTERN.matcher(path);
+        Path recordingLocation = getRecordingLocation();
         if (matcher.matches()) {
             String token = matcher.group(1);
             String fileName = matcher.group(2);
-            Recording recording = new Recording(token, fileName);
+            Recording recording = new Recording(recordingLocation, token, fileName);
             if (!recording.file.exists()) {
                 // If we got a URL encoded file name containing a space, then we'll get it
                 // as a +. Try replacing + with " "
-                recording = new Recording(token, fileName.replaceAll("\\+", " "));
+                recording = new Recording(recordingLocation, token, fileName.replaceAll("\\+", " "));
             }
             return recording;
         }
