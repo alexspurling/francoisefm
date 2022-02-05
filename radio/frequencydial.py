@@ -7,6 +7,7 @@ ENCODER_DT = 18
 BUTTON = 4
 
 
+# Original Frequency dial based on a digital rotary encoder
 class FrequencyDial:
 
     def __init__(self, frequency_changed):

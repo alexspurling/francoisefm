@@ -72,6 +72,13 @@ ansible-playbook -i inventory 04-deploy.yml -u alex
 ansible-playbook -i inventory 05-radio.yml -u pi
 ```
 
+**Manual steps**
+
+This enables the service to ensure it starts on restart. Not sure how to make automate it yet.
+```
+sudo systemctl enable francoisefm_radio
+```
+
 **Notes playing audio on the Raspberry Pi**
 
 If the volume is too low:

@@ -419,6 +419,10 @@ function calculateFrequency(str) {
     return (Math.abs(hash(str)) % 200 + 870) / 10;
 }
 
+// with a 12bit adc we could have 4000 different possible values
+// this would be 87.0, 87.005, 87.01, 87.015, 87.02 etc
+
+
 nameInput.addEventListener('keydown', function(event) {
     if(event.key === 'Enter') {
         clickEnter();

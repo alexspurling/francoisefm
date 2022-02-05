@@ -23,7 +23,8 @@ def adjust(val, step):
 
 class Audio:
 
-    def __init__(self):
+    def __init__(self, display):
+        self.display = display
         self.static = pygame.mixer.Channel(0)
         self.static.set_volume(0)
         # Immediately start playing static in a loop but with 0 volume
@@ -38,13 +39,11 @@ class Audio:
     def play_static(self):
         if self.mode == Mode.OFF:
             self.mode = Mode.STATIC
-            logging.info("Tuning to static")
 
             self.fade_static(1, Mode.STATIC)
 
         elif self.mode == Mode.PLAYING or self.mode == Mode.NEARBY:
             self.mode = Mode.STATIC
-            logging.info("Tuning to static")
 
             self.track.stop()
             self.track_nearby.stop()
@@ -133,10 +132,14 @@ class Audio:
         # Play the given file at the index now
         self.track_list = track_list
         self.track_index = index
-        file: str = self.track_list[index]
+        track = self.track_list[index]
+        name = self.track_list[index]["name"]
+        file: str = track["file"]
         nearby_file = file[0:file.rindex(".")] + "-lowpass" + file[file.rindex("."):]
 
-        logging.info("Playing track: " + nearby_file if nearby else file)
+        logging.debug(f"Playing nearby: {nearby}")
+        logging.debug("File  : " + file)
+        logging.debug("Nearby: " + nearby_file)
 
         self.track.play(pygame.mixer.Sound(file))
         self.track_nearby.play(pygame.mixer.Sound(nearby_file))
@@ -144,6 +147,7 @@ class Audio:
             self.track.set_volume(0)
             self.track_nearby.set_volume(1)
         else:
+            self.display.display_station(name)
             self.track.set_volume(1)
             self.track_nearby.set_volume(0)
 
@@ -151,6 +155,5 @@ class Audio:
         # Check if the last track has ended. if so then play the next in the list
         if self.track_list and not self.track.get_busy() \
                 and (self.mode == Mode.NEARBY or self.mode == Mode.PLAYING):
-            logging.info("Everything's quiet. Play the next track")
             self.track_index = (self.track_index + 1) % len(self.track_list)
             self.play_now(self.track_list, self.track_index, self.mode == Mode.NEARBY)

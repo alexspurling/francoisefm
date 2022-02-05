@@ -56,14 +56,16 @@ class Display:
         self.stop_thread = True
         self.thread_stopped = True
 
+        self.freq = 1010
+
     def clear(self):
         # Draw a black filled box to clear the image.
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
 
-    def display_station_at_x(self, freq, name, x):
+    def display_station_at_x(self, name, x):
         self.clear()
 
-        freq_str = str(freq / 10)
+        freq_str = str(self.freq / 10)
 
         if name:
             self.draw.text((40, 0), f"{freq_str}Mhz ", font=self.font, fill=255)
@@ -75,13 +77,13 @@ class Display:
         self.disp.image(self.image)
         self.disp.display()
 
-    def display_name_thread(self, freq, name):
+    def display_name_thread(self, name):
         try:
             x = 0
 
             size = self.font2.getsize(name)
             while not self.stop_thread:
-                self.display_station_at_x(freq, name, x)
+                self.display_station_at_x(name, x)
 
                 x -= 1
                 if x < -size[0]:
@@ -92,7 +94,10 @@ class Display:
             logging.exception("Error in display thread", exc_info=e)
         self.thread_stopped = True
 
-    def display_station(self, freq, name):
+    def set_freq(self, freq):
+        self.freq = freq
+
+    def display_station(self, name):
         self.stop_thread = True
         # Wait until the thread has stopped before starting a new one
         while not self.thread_stopped:
@@ -100,12 +105,12 @@ class Display:
 
         # start new thread if name is > 11 chars so we can animate the display
         if name and len(name) > 11:
-            t = threading.Thread(target=self.display_name_thread, args=(freq, name))
+            t = threading.Thread(target=self.display_name_thread, args=(name, ))
             self.stop_thread = False
             self.thread_stopped = False
             t.start()
             # self.display_station_at_x(freq, name, 10)
         else:
-            self.display_station_at_x(freq, name, 0)
+            self.display_station_at_x(name, 0)
 
 # "Afgjqwyç,ç,Çâêîôûé,àèùëïü,AaÅåÆæFæfHhåJjådKkåLælMæmNænØøOoSæsXæksYyZsæt,"

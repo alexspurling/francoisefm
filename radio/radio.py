@@ -8,10 +8,11 @@ import hashlib
 import re
 import random
 import time
+import threading
 
+from analoguedial import AnalogueDial
 from audio import Audio
 from display import Display
-from frequencydial import FrequencyDial
 
 
 log_formatter = logging.Formatter("[%(asctime)s] [%(levelname)s] %(message)s")
@@ -100,14 +101,15 @@ class Radio:
                 name = match.group(2)
                 frequency = self.calculate_frequency(name + user_token)
                 if frequency not in self.files_by_frequency:
-                    self.files_by_frequency[frequency] = {"files": set(), "name": name}
-                self.files_by_frequency[frequency]['files'].add(os.path.join(RECORDINGS, file["path"]))
+                    self.files_by_frequency[frequency] = []
+                self.files_by_frequency[frequency].append(
+                    {"file": os.path.join(RECORDINGS, file["path"]), "name": name})
         logging.info(f"Calculated {len(self.files_by_frequency)} frequencies")
         for freq in sorted(self.files_by_frequency.keys()):
             freq_str = f"{freq / 10}"
-            name = self.files_by_frequency[freq]["name"]
-            num_files = self.files_by_frequency[freq]["files"]
-            logging.info(f"{freq_str} Mhz {name}: {num_files} files")
+            files_for_freq = self.files_by_frequency[freq]
+            num_files = len(files_for_freq)
+            logging.info(f"Got {num_files} files for {freq_str} Mhz: {files_for_freq}")
 
     def sync_files(self):
         self.all_files = self.get_all_files()
@@ -123,21 +125,15 @@ class Radio:
 
     def play(self, freq, target_freq):
         logging.info(f"Tuning to {freq}")
-        start_time = time.time()
-        freq_files = list(self.files_by_frequency[target_freq]["files"])
-        name = self.files_by_frequency[target_freq]["name"]
+        freq_files = self.files_by_frequency[target_freq]
         random_index = random.randrange(0, len(freq_files))
+        display.set_freq(freq)
         if freq == target_freq:
-            logging.info(f"Displaying {freq} {name}")
-            display.display_station(freq, name)
-            logging.info(f"Playing {freq}")
+            display.display_station(freq_files[random_index]["name"])
             self.audio.play_track(freq_files, random_index)
         else:
-            logging.info(f"Displaying {freq}")
-            display.display_station(freq, None)
-            logging.info(f"Playing {freq} (nearby)")
+            display.display_station(None)
             self.audio.play_nearby(freq_files, random_index)
-        logging.info(f"Finished playing {freq} ({time.time() - start_time}ms)")
 
     def tune(self, freq):
         if freq in self.files_by_frequency:
@@ -147,30 +143,48 @@ class Radio:
         elif (freq - 1) in self.files_by_frequency:
             self.play(freq, freq - 1)
         else:
-            display.display_station(freq, None)
+            display.set_freq(freq)
+            display.display_station(None)
             self.audio.play_static()
 
 
-audio = Audio()
 display = Display()
+audio = Audio(display)
 radio = Radio(audio, display)
 
+dial = AnalogueDial()
+# dial.loop()
 
-def frequency_changed(freq):
-    logging.info(f"Freq changed to {freq}")
-    radio.tune(freq)
+# Original frequency dial based on digital rotary dial
+# def frequency_changed(freq):
+#     radio.tune(freq)
+#
+# FrequencyDial(frequency_changed)
+#
+# frequency_changed(1000)
 
 
-FrequencyDial(frequency_changed)
+def read_frequency():
+    freq = 1000
+    while True:
+        new_freq, _ = dial.get_freq()
 
-frequency_changed(1000)
+        if new_freq != freq:
+            radio.tune(new_freq)
+            freq = new_freq
+
+        time.sleep(1 / 10)
+
+
+t = threading.Thread(target=read_frequency)
+t.start()
 
 while True:
     try:
-        # Sync files every 60 seconds
+        # Sync files every 300 seconds
         radio.sync_files()
 
-        for i in range(0, 60):
+        for i in range(0, 300):
             # Periodically check for the next track to play
             audio.check_next_track()
             time.sleep(1)
