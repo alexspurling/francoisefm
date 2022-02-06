@@ -27,38 +27,46 @@ public class AudioConverter {
         }
     }
 
+    private static File convertPathTo(File recording, String newExtension) {
+        Path filePath = ServletHelper.RECORDINGS.relativize(recording.toPath());
+        Path convertedFilePath = ServletHelper.CONVERTED.resolve(filePath);
+
+        int extensionIndex = recording.getName().lastIndexOf(".");
+        String fileNoExt = recording.getName().substring(0, extensionIndex);
+
+        String newFileName = fileNoExt + newExtension;
+        return convertedFilePath.getParent().resolve(newFileName).toFile();
+    }
+
+    public static File convertPathToOgg(File recording) {
+        return convertPathTo(recording, ".ogg");
+    }
+
+    public static File convertPathToOggLowpass(File recording) {
+        return convertPathTo(recording, "-lowpass.ogg");
+    }
+
     public void convertToOgg(File recording) {
         service.submit(() -> {
             try {
-                String fileIn = recording.getAbsolutePath();
-                String outDir = recording.getParentFile().getAbsolutePath()
-                        .replace("recordings", "converted");
-                new File(outDir).mkdirs();
-
-                int extensionIndex = recording.getName().lastIndexOf(".");
-                String fileNoExt = recording.getName().substring(0, extensionIndex);
-
-                String oggPath = outDir + "/" + fileNoExt + ".ogg";
-                String lowPassPath = outDir + "/" + fileNoExt + "-lowpass.ogg";
-
-                convertToOgg(fileIn, oggPath, false);
-                convertToOgg(fileIn, lowPassPath, true);
+                convertToOgg(recording.getAbsoluteFile(), convertPathToOgg(recording), false);
+                convertToOgg(recording.getAbsoluteFile(), convertPathToOggLowpass(recording), true);
             } catch(Exception e) {
                 LOG.log(Level.SEVERE, "Error calling ffmpeg", e);
             }
         });
     }
 
-    private void convertToOgg(String fileIn, String fileOut, boolean lowpass) throws IOException {
+    private void convertToOgg(File fileIn, File fileOut, boolean lowpass) throws IOException {
         String[] cmd;
         // pygame on the raspberry pi can only use one fixed sample rate rather than adapting
         // to the audio source. This means we have to encode all our audio with the same
         // sample rate. Later versions of pygame can adapt to the input but it's difficult
         // to update pygame on the raspberry pi
         if (lowpass) {
-            cmd = new String[] {"ffmpeg", "-y", "-i", fileIn, "-ar", "44100", "-af", "lowpass=f=400", fileOut};
+            cmd = new String[] {"ffmpeg", "-y", "-i", fileIn.getAbsolutePath(), "-ar", "44100", "-af", "lowpass=f=400", fileOut.getAbsolutePath()};
         } else {
-            cmd = new String[] {"ffmpeg", "-y", "-i", fileIn, "-ar", "44100", fileOut};
+            cmd = new String[] {"ffmpeg", "-y", "-i", fileIn.getAbsolutePath(), "-ar", "44100", fileOut.getAbsolutePath()};
         }
 
         Process process = Runtime.getRuntime().exec(cmd);

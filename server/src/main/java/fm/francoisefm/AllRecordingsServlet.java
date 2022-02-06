@@ -63,10 +63,12 @@ public class AllRecordingsServlet extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
+
+        String sanitisedUserName = userId.name.replaceAll("[\\\\./]", "_");
         // Make sure we only look for files that match the logged-in user's name
         List<File> ownUserFiles = Arrays.stream(userFiles)
                 .sorted(Comparator.comparingLong(File::lastModified))
-                .filter((f) -> f.getName().matches("^" + Pattern.quote(userId.name) + "[0-9][0-9].\\w+$"))
+                .filter((f) -> f.getName().matches("^" + Pattern.quote(sanitisedUserName) + "[0-9][0-9].\\w+$"))
                 .collect(Collectors.toList());
 
         if (ownUserFiles.isEmpty()) {
@@ -190,8 +192,9 @@ public class AllRecordingsServlet extends HttpServlet {
 
     private File getNewAudioFile(UserId userId, String fileExtension) {
         File userDir = ServletHelper.getUserDir(userId);
+        String sanitisedUserName = userId.name.replaceAll("[\\\\./]", "_");
         for (int i = 1; i < MAX_FILES_PER_USER; i++) {
-            File audioFile = new File(userDir, String.format(userId.name + "%02d", i) + fileExtension);
+            File audioFile = new File(userDir, String.format(sanitisedUserName + "%02d", i) + fileExtension);
             if (!audioFile.exists()) {
                 return audioFile;
             }

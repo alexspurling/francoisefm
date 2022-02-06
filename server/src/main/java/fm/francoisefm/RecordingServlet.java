@@ -1,8 +1,5 @@
 package fm.francoisefm;
 
-import org.eclipse.jetty.io.EofException;
-
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -34,7 +31,7 @@ public class RecordingServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) {
         long startTime = System.currentTimeMillis();
         LOG.info("GET " + ServletHelper.getRequestURL(request));
 
@@ -62,7 +59,7 @@ public class RecordingServlet extends HttpServlet {
     }
 
     @Override
-    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response) {
         long startTime = System.currentTimeMillis();
         LOG.info("DELETE " + ServletHelper.getRequestURL(request));
 
@@ -94,7 +91,14 @@ public class RecordingServlet extends HttpServlet {
     }
 
     private void deleteRecording(Recording recording) {
-        if (!recording.file.delete()) {
+        boolean deletedRecording = recording.file.delete();
+        boolean deletedOgg = AudioConverter.convertPathToOgg(recording.file).delete();
+        boolean deletedLowpass = AudioConverter.convertPathToOggLowpass(recording.file).delete();
+
+        if (!deletedRecording || !deletedOgg || !deletedLowpass) {
+            LOG.warning("Deleted recording: " + deletedRecording);
+            LOG.warning("Deleted converted ogg: " + deletedOgg);
+            LOG.warning("Deleted lowpass ogg: " + deletedLowpass);
             throw new AudioServerException("Failed to delete recording file " + recording.file.getAbsolutePath());
         }
     }
