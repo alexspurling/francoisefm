@@ -22,7 +22,7 @@ let detectedMimeType = null;
 let username = '';
 let frequency = '';
 let userToken = getUserToken();
-let locale = 'en';
+let locale = '';
 let translations = {};
 
 // visualiser setup - create web audio api context and canvas

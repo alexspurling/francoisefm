@@ -21,7 +21,6 @@ body {
 
 a {
   color: #0088cc;
-  font-size: 1.2em;
   text-decoration: none;
 }
 
@@ -46,6 +45,12 @@ a:hover {
 header {
   margin: 10px;
   text-align: center;
+}
+
+.tips {
+  margin-top: 1em;
+  text-align: left;
+  padding-left: 2em;
 }
 
 h1, h2 {
