@@ -1,6 +1,6 @@
 {
-  "name": "Prénom",
-  "welcome": "Bienvenue sur <span class=\"radio\">{username} {frequency}</span>, votre propre radio sur Françoise FM ! Veuillez enregistrer un message d'une durée maximale de 5 minutes à Françoise pour lui envoyer vos meilleurs vœux pour son anniversaire. Vous pouvez enregistrer autant de messages que vous le souhaitez et revenir les supprimer à tout moment.",
+  "name": "Nom / Nom de station (e.g. Family Quéromain)",
+  "welcome": "Bienvenue sur <span class=\"radio\">{username} {frequency}</span>, votre propre radio sur Françoise FM ! <div class=\"tips\"><ul><li>Enregistrez autant de messages que vous le souhaitez - ils seront diffusés dans l'ordre.</li><li>Vous avez une idée pour une autre radio ? <a href=\"/\">Cliquez ici</a> pour en créer un autre.</li><li>Cliquez sur enregistrer pour commencer!</li></ul></div>",
   "nomicrophone": "L'accès au microphone n'est pas pris en charge dans ce navigateur :(",
   "microphoneblocked": "Impossible d'obtenir l'autorisation du microphone :(",
   "error": "Erreur: {error}",
@@ -8,7 +8,7 @@
   "enter": "Entrer",
   "record": "Enregistrer",
   "stop": "Arrêter",
-  "yourmessages": "Votre messages",
+  "yourmessages": "Vos messages",
   "savedas": "Enregistré sous {fileName}",
   "saving": "Enregistrement de l'extrait...",
   "errorsaving": "Erreur lors de l'enregistrement",

@@ -1,16 +1,16 @@
 {
-  "name": "Navn",
-  "welcome": "Velkommen til <span class=\"radio\">{username} {frequency}</span>, din helt egen radiostation på Françoise FM! Optag venligst en besked på op til 5 minutter til Françiose for at sende hende dine bedste ønsker til hendes fødselsdag. Du kan optage så mange beskeder, du vil, og vende tilbage og slette dem til enhver tid.",
-  "nomicrophone": "Mikrofonadgang er ikke understøttet i denne browser :(",
+  "name": "Navn / Stationsnavn (e.g. Buxbom Family)",
+  "welcome": "Velkommen til <span class=\"radio\">{username} {frequency}</span>, din helt egen radiostation på Françoise FM!  <div class=\"tips\"><ul><li>Optag så mange beskeder, du vil - de vil blive udsendt i rækkefølge.</li><li>Har du en idé til en anden radiostation? <a href=\"/\">Klik her</a> for at oprette endnu en.</li><li>Klik optag for at starte!</li></ul></div>",
+  "nomicrophone": "Mikrofonadgang understøttes ikke i denne browser :(",
   "microphoneblocked": "Kunne ikke få mikrofontilladelse :(",
   "error": "Fejl: {error}",
   "somethingwrong": "Noget gik galt :(",
   "enter": "Enter",
-  "record": "Optag",
+  "record": "Optage",
   "stop": "Stop",
   "yourmessages": "Dine beskeder",
-  "savedas": "Gem som {fileName}",
+  "savedas": "Gemt som {fileName}",
   "saving": "Gemmer klip...",
-  "errorsaving": "Fejl ved lagring",
+  "errorsaving": "Fejl ved at gemme",
   "delete": "Slet"
 }
