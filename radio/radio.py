@@ -8,7 +8,6 @@ import hashlib
 import re
 import random
 import time
-import threading
 
 from analoguedial import AnalogueDial
 from audio import Audio
@@ -42,6 +41,14 @@ class Radio:
         self.files_by_frequency = {}
         self.audio = audio
         self.display = display
+
+    # load the file list into memory
+    def init_files(self):
+        for token in os.listdir(RECORDINGS):
+            for file in os.listdir(join(RECORDINGS, token)):
+                path = f"{token}/{file}"
+                self.all_files.append({"path": path, "hash": self.hash(path)})
+        self.calculate_frequencies()
 
     @staticmethod
     def get_server_password():
@@ -165,13 +172,18 @@ dial = AnalogueDial()
 # frequency_changed(1000)
 
 
+try:
+    # First load files from the file system
+    radio.init_files()
+    # Then try to do an initial sync but it will fail if we have no internet
+    radio.sync_files()
+except Exception as e:
+    logging.exception(f"Error! {e}", exc_info=e)
+
 freq = 1
 
 while True:
     try:
-        # Sync files every 300 seconds
-        radio.sync_files()
-
         for i in range(0, 300):
             for j in range(0, 10):
                 new_freq, _ = dial.get_freq()
@@ -183,7 +195,10 @@ while True:
 
             # Periodically check for the next track to play
             audio.check_next_track()
+
+        # Sync files every 300 seconds
+        radio.sync_files()
     except Exception as e:
         logging.exception(f"Error! {e}", exc_info=e)
-        logging.error("Sleeping for 5s before trying again")
-        time.sleep(5)
+        logging.error("Sleeping for 10s before trying again")
+        time.sleep(10)
