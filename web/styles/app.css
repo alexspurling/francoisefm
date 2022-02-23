@@ -10,13 +10,17 @@ html, body {
 
 body {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 0.8rem;
+  font-size: 1.5em;
   background-image: url("../images/speakercloth.jpeg");
 }
 
 .languageSelect {
   text-align: center;
   padding: 3px;
+}
+
+#stations button {
+  color: #0088cc;
 }
 
 a {
@@ -139,13 +143,19 @@ section {
   opacity: 1;
 }
 
-.loginHidden {
+.shiftUp {
   top: -150px;
+}
+
+.shiftUpMore {
+  top: -175px;
+}
+
+.fadeOut {
   opacity: 0;
 }
 
-.main {
-  top: -150px;
+.fadeIn {
   opacity: 1;
 }
 
@@ -155,7 +165,6 @@ section {
 }
 
 .languageSelect {
-  top: -150px;
   opacity: 1;
 }
 

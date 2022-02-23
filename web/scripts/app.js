@@ -2,6 +2,7 @@
 
 const serverUrl = "http://localhost:9090";
 
+const stationsContainer = document.querySelector('#stations');
 const record = document.querySelector('#record');
 const soundClips = document.querySelector('.soundClips');
 const canvas = document.querySelector('.visualizer');
@@ -139,6 +140,7 @@ function setDefaultLocale() {
 
 getEnTranslations();
 setDefaultLocale();
+loadStations();
 
 function clickEnter() {
 
@@ -148,9 +150,18 @@ function clickEnter() {
 
     username = nameInput.value;
     if (username) {
-        mainSection.className = "main";
+
         frequency = calculateFrequency(username + userToken);
-        loginSection.className = "loginHidden";
+
+        const stationDisplay = stationsContainer.children.length > 0;
+
+        loginSection.classList.add(stationDisplay ? "shiftUpMore" : "shiftUp");
+        mainSection.classList.add(stationDisplay ? "shiftUpMore" : "shiftUp");
+        mainSection.classList.remove("mainHidden");
+        loginSection.classList.add("fadeOut");
+        mainSection.classList.add("fadeIn");
+
+        addNewStation(username, frequency);
 
         // Update the text for the textBlock element with the username and frequency
         updateText(textBlock, {username, frequency});
@@ -181,6 +192,55 @@ function clickEnter() {
                 console.log("Error getting audio files", response);
             });
     }
+}
+
+
+function getStations() {
+    const stations = JSON.parse(localStorage.getItem("francoisefmstations"));
+
+    if (stations) {
+        return stations;
+    }
+    return [];
+}
+
+
+function loadStation(station) {
+    console.log("Loaded station", station);
+    nameInput.value = station;
+    clickEnter();
+}
+
+
+function loadStations() {
+    const stations = getStations();
+    if (stations.length > 0) {
+//        const yourStations = document.createElement('p');
+//        yourStations.innerHTML = "Your stations:"
+//        stationsContainer.appendChild(yourStations);
+        const stationList = document.createElement('p');
+        stationsContainer.appendChild(stationList);
+        var stationsListHTML = ""
+        for (var i = 0; i < stations.length - 1; i++) {
+            stationsListHTML += "<button onclick=\"loadStation('" + stations[i][0] + "')\">" + stations[i][0] + " " + stations[i][1] + " FM</button>&nbsp;|&nbsp;"
+        }
+        const lastStation = stations[stations.length - 1]
+        stationsListHTML += "<button onclick=\"loadStation('" + lastStation[0] + "')\">" + lastStation[0] + " " + lastStation[1] + " FM</button>"
+        stationList.innerHTML = stationsListHTML;
+    }
+}
+
+function addNewStation(station, frequency) {
+    const stations = getStations()
+
+    for (var i = 0; i < stations.length; i++) {
+        if (stations[i][0] == station) {
+            // Already recorded this station
+            return;
+        }
+    }
+    stations.push([station, frequency]);
+    localStorage.setItem("francoisefmstations", JSON.stringify(stations));
 }
 
 
