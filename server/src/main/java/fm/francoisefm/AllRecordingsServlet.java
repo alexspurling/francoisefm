@@ -4,11 +4,7 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -18,7 +14,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+
+import static java.util.Collections.emptyList;
 
 public class AllRecordingsServlet extends HttpServlet {
 
@@ -54,26 +51,19 @@ public class AllRecordingsServlet extends HttpServlet {
         LOG.info("User id: " + userId);
 
         File userDir = ServletHelper.getUserDir(userId);
-        if (!userDir.exists()) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            return;
-        }
         File[] userFiles = userDir.listFiles();
-        if (userFiles == null) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            return;
-        }
 
-        String sanitisedUserName = userId.name.replaceAll("[\\\\./]", "_");
+        int frequency = FrequencyCalculator.calculate(userId);
+
+        List<File> ownUserFiles;
         // Make sure we only look for files that match the logged-in user's name
-        List<File> ownUserFiles = Arrays.stream(userFiles)
-                .sorted(Comparator.comparingLong(File::lastModified))
-                .filter((f) -> f.getName().matches("^" + Pattern.quote(sanitisedUserName) + "[0-9][0-9].\\w+$"))
-                .collect(Collectors.toList());
-
-        if (ownUserFiles.isEmpty()) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            return;
+        if (userFiles == null) {
+            ownUserFiles = emptyList();
+        } else {
+            ownUserFiles = Arrays.stream(userFiles)
+                    .filter((f) -> f.getName().matches("^" + Pattern.quote(userId.sanitisedName()) + "_([1-9][0-9][0-9][0-9]?)_([0-9][0-9])\\.\\w+$"))
+                    .sorted(Comparator.comparingLong(File::lastModified))
+                    .toList();
         }
 
         // Important to set the content type before getting the PrintWriter
@@ -81,18 +71,27 @@ public class AllRecordingsServlet extends HttpServlet {
         response.setContentType("application/json");
         PrintWriter writer = response.getWriter();
 
-        writer.println("[");
+        writer.println("{");
+        writer.println("\"frequency\": \"" + formatFrequency(frequency) + "\",");
+        writer.println("\"files\": [");
 
-        // Awkward iteration through all but the last file
-        for (int i = 0; i < ownUserFiles.size() - 1; i++) {
-            writer.println("  \"/audio/" + userId.token + "/" + ownUserFiles.get(i).getName() + "\",");
+        if (!ownUserFiles.isEmpty()) {
+            // Awkward iteration through all but the last file
+            for (int i = 0; i < ownUserFiles.size() - 1; i++) {
+                writer.println("  \"/audio/" + userId.token + "/" + ownUserFiles.get(i).getName() + "\",");
+            }
+            // So that the last file does not include a comma
+            writer.println("  \"/audio/" + userId.token + "/" + ownUserFiles.get(ownUserFiles.size() - 1).getName() + "\"");
         }
-        // So that the last file does not include a comma
-        writer.println("  \"/audio/" + userId.token + "/" + ownUserFiles.get(ownUserFiles.size() - 1).getName() + "\"");
 
         writer.println("]");
+        writer.println("}");
 
         response.setStatus(HttpServletResponse.SC_OK);
+    }
+
+    private String formatFrequency(int frequency) {
+        return frequency / 10 + "." + frequency % 10;
     }
 
     @Override
@@ -192,9 +191,10 @@ public class AllRecordingsServlet extends HttpServlet {
 
     private File getNewAudioFile(UserId userId, String fileExtension) {
         File userDir = ServletHelper.getUserDir(userId);
-        String sanitisedUserName = userId.name.replaceAll("[\\\\./]", "_");
+        String sanitisedUserName = userId.sanitisedName();
+        int frequency = FrequencyCalculator.calculate(userId);
         for (int i = 1; i < MAX_FILES_PER_USER; i++) {
-            File audioFile = new File(userDir, String.format(sanitisedUserName + "%02d", i) + fileExtension);
+            File audioFile = new File(userDir, String.format(sanitisedUserName + "_%03d_%02d", frequency, i) + fileExtension);
             if (!audioFile.exists()) {
                 return audioFile;
             }

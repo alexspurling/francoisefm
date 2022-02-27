@@ -11,14 +11,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-import java.util.Comparator;
-import java.util.HexFormat;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 public class AllStationsServlet extends HttpServlet {
 
@@ -57,7 +52,7 @@ public class AllStationsServlet extends HttpServlet {
                 .filter(Files::isRegularFile)
                 .filter(p -> AUDIO_FILE_EXTENSIONS.contains(extension(p)))
                 .sorted(Comparator.comparingLong(p -> p.toFile().lastModified()))
-                .collect(Collectors.toList());
+                .toList();
 
         if (!allFiles.isEmpty()) {
             for (int i = 0; i < allFiles.size() - 1; i++) {

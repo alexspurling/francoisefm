@@ -107,6 +107,7 @@ class Radio:
             if match:
                 user_token = match.group(1)
                 name = match.group(2)
+                # TODO get frequency from file name freq = match.group(3)
                 frequency = self.calculate_frequency(name + user_token)
                 if frequency not in self.files_by_frequency:
                     self.files_by_frequency[frequency] = []

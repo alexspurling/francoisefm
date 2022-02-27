@@ -63,10 +63,26 @@ public class AudioConverter {
         // to the audio source. This means we have to encode all our audio with the same
         // sample rate. Later versions of pygame can adapt to the input but it's difficult
         // to update pygame on the raspberry pi
-        if (lowpass) {
-            cmd = new String[] {"ffmpeg", "-y", "-i", fileIn.getAbsolutePath(), "-ar", "44100", "-af", "lowpass=f=400", fileOut.getAbsolutePath()};
+        String inputFile = windowsToWSLPath(fileIn);
+        String outputFile = windowsToWSLPath(fileOut);
+
+        if (System.getProperty("os.name").startsWith("Windows")) {
+            if (lowpass) {
+                cmd = new String[]{"wsl", "ffmpeg", "-y", "-i", inputFile, "-ar", "44100", "-af", "lowpass=f=400", outputFile};
+            } else {
+                cmd = new String[]{"wsl", "ffmpeg", "-y", "-i", inputFile, "-ar", "44100", outputFile};
+            }
         } else {
-            cmd = new String[] {"ffmpeg", "-y", "-i", fileIn.getAbsolutePath(), "-ar", "44100", fileOut.getAbsolutePath()};
+            if (lowpass) {
+                cmd = new String[]{"ffmpeg", "-y", "-i", inputFile, "-ar", "44100", "-af", "lowpass=f=400", outputFile};
+            } else {
+                cmd = new String[]{"ffmpeg", "-y", "-i", inputFile, "-ar", "44100", outputFile};
+            }
+        }
+
+        // Make sure the converted directory exists
+        if (!fileOut.getParentFile().exists()) {
+            fileOut.getParentFile().mkdirs();
         }
 
         Process process = Runtime.getRuntime().exec(cmd);
@@ -98,5 +114,9 @@ public class AudioConverter {
         } else {
             LOG.warning("Process did not exit for some reason");
         }
+    }
+
+    private String windowsToWSLPath(File file) {
+        return file.getAbsolutePath().replaceAll("\\\\", "/").replaceAll("^C:", "/mnt/c");
     }
 }

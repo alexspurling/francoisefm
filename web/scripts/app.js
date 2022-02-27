@@ -30,6 +30,8 @@ let translations = {};
 let audioCtx;
 const canvasCtx = canvas.getContext("2d");
 
+history.replaceState(null, "Françoise FM");
+
 // Retrieve translations JSON object for the given
 // locale over the network
 function fetchTranslationsFor(newLocale) {
@@ -142,32 +144,76 @@ getEnTranslations();
 setDefaultLocale();
 loadStations();
 
-function clickEnter() {
+function enterStation(username, frequency, stationFiles, dontPushState) {
 
-    // turn on the microphone or ask for permission to turn on the microphone
-    const constraints = {audio: true};
-    navigator.mediaDevices.getUserMedia(constraints).then(onMicrophoneReady, onMicrophoneError);
+    // Delay asking for the microphone a little bit because it can freeze the UI
+    setTimeout(() => {
+        // turn on the microphone or ask for permission to turn on the microphone
+        const constraints = {audio: true};
+        navigator.mediaDevices.getUserMedia(constraints).then(onMicrophoneReady, onMicrophoneError);
+    }, 900);
+
+    const stationDisplay = stationsContainer.children.length > 0;
+
+    loginSection.classList.add(stationDisplay ? "shiftUpMore" : "shiftUp");
+    mainSection.classList.add(stationDisplay ? "shiftUpMore" : "shiftUp");
+    mainSection.classList.remove("mainHidden");
+    loginSection.classList.add("fadeOut");
+    mainSection.classList.add("fadeIn");
+
+    // Update the text for the textBlock element with the username and frequency
+    updateText(textBlock, {username, frequency});
+
+    // Record this station in local storage
+    addNewStation(username, frequency);
+
+    stationFiles.forEach(url => {
+        let fullUrl = serverUrl + url;
+        let fileName = getFileFromUrl(url);
+        addNewClip(fullUrl, fileName, fileName);
+    });
+
+    if (!dontPushState) {
+        stateObj = {username, frequency, stationFiles}
+        history.pushState(stateObj, "Françoise FM - " + username);
+    }
+}
+
+window.onpopstate = function(popStateEvent) {
+    console.log("event", popStateEvent)
+    if (popStateEvent.state == null) {
+        // User clicked back
+
+        stopRecording();
+
+        // Reload any newly saved stations
+        loadStations();
+
+        const stationDisplay = stationsContainer.children.length > 0;
+        loginSection.classList.remove(stationDisplay ? "shiftUpMore" : "shiftUp");
+        mainSection.classList.remove(stationDisplay ? "shiftUpMore" : "shiftUp");
+        mainSection.classList.add("mainHidden");
+        loginSection.classList.remove("fadeOut");
+        mainSection.classList.remove("fadeIn");
+
+        // Remove items from clipContainer
+        soundClips.textContent = "";
+
+        history.replaceState(null, "Françoise FM");
+    } else {
+        // User clicked forward
+        username = popStateEvent.state.username;
+        frequency = popStateEvent.state.frequency;
+        enterStation(username, frequency, popStateEvent.state.stationFiles, true);
+    }
+}
+
+function clickEnter() {
 
     username = nameInput.value;
     if (username) {
-
-        frequency = calculateFrequency(username + userToken);
-
-        const stationDisplay = stationsContainer.children.length > 0;
-
-        loginSection.classList.add(stationDisplay ? "shiftUpMore" : "shiftUp");
-        mainSection.classList.add(stationDisplay ? "shiftUpMore" : "shiftUp");
-        mainSection.classList.remove("mainHidden");
-        loginSection.classList.add("fadeOut");
-        mainSection.classList.add("fadeIn");
-
-        addNewStation(username, frequency);
-
-        // Update the text for the textBlock element with the username and frequency
-        updateText(textBlock, {username, frequency});
-
         // Get this user's previously recorded files
-        let headers = {'Authorization': 'Bearer ' + username + userToken};
+        let headers = {'Authorization': 'Bearer ' + Base64.encode(username + userToken)};
         let options = {
             method: 'GET',
             headers: headers,
@@ -176,24 +222,19 @@ function clickEnter() {
         }
         fetch(serverUrl + '/audio', options)
             .then(response => {
-                // Expect to get a 404 if user has no recordings
-                if (response.status == 404) {
-                    return;
-                }
-                response.json()
-                    .then(files => {
-                        files.forEach(url => {
-                            let fullUrl = serverUrl + url;
-                            let fileName = getFileFromUrl(url);
-                            addNewClip(fullUrl, fileName, fileName);
+                if (response.status == 200) {
+                    response.json()
+                        .then(station => {
+                            enterStation(username, station['frequency'], station['files'])
                         });
-                    });
+                } else {
+                    displayError("Error logging in", response)
+                }
             }).catch(response => {
-                console.log("Error getting audio files", response);
+                displayError("Error logging in", response)
             });
     }
 }
-
 
 function getStations() {
     const stations = JSON.parse(localStorage.getItem("francoisefmstations"));
@@ -201,45 +242,35 @@ function getStations() {
     if (stations) {
         return stations;
     }
-    return [];
+    return {};
 }
 
 
-function loadStation(station) {
-    console.log("Loaded station", station);
-    nameInput.value = station;
+function loadStation(stationIdx) {
+    const stations = getStations();
+    nameInput.value = Object.keys(stations)[stationIdx];
     clickEnter();
 }
 
 
 function loadStations() {
     const stations = getStations();
-    if (stations.length > 0) {
-//        const yourStations = document.createElement('p');
-//        yourStations.innerHTML = "Your stations:"
-//        stationsContainer.appendChild(yourStations);
-        const stationList = document.createElement('p');
-        stationsContainer.appendChild(stationList);
-        var stationsListHTML = ""
-        for (var i = 0; i < stations.length - 1; i++) {
-            stationsListHTML += "<button onclick=\"loadStation('" + stations[i][0] + "')\">" + stations[i][0] + " " + stations[i][1] + " FM</button>&nbsp;|&nbsp;"
+    if (Object.keys(stations).length > 0) {
+        var stationsContainerHTML = ""
+        const entries = Object.entries(stations);
+        for (var i = 0; i < entries.length - 1; i++) {
+            stationsContainerHTML += "<button onclick=\"loadStation(" + i + ")\">" + entries[i][0] + " " + entries[i][1] + " FM</button>&nbsp;|&nbsp;"
         }
-        const lastStation = stations[stations.length - 1]
-        stationsListHTML += "<button onclick=\"loadStation('" + lastStation[0] + "')\">" + lastStation[0] + " " + lastStation[1] + " FM</button>"
-        stationList.innerHTML = stationsListHTML;
+
+        const lastStation = entries[entries.length - 1]
+        stationsContainerHTML += "<button onclick=\"loadStation(" + i + ")\">" + lastStation[0] + " " + lastStation[1] + " FM</button>"
+        stationsContainer.innerHTML = stationsContainerHTML;
     }
 }
 
 function addNewStation(station, frequency) {
     const stations = getStations()
-
-    for (var i = 0; i < stations.length; i++) {
-        if (stations[i][0] == station) {
-            // Already recorded this station
-            return;
-        }
-    }
-    stations.push([station, frequency]);
+    stations[station] = frequency;
     localStorage.setItem("francoisefmstations", JSON.stringify(stations));
 }
 
@@ -270,7 +301,7 @@ function addNewClip(audioURL, label, fileName) {
 
     deleteButton.onclick = function(event) {
         if (clipLabel.dataset.fileName) {
-            let headers = {'Authorization': 'Bearer ' + username + userToken};
+            let headers = {'Authorization': 'Bearer ' + Base64.encode(username + userToken)};
             let options = {
                 method: 'DELETE',
                 headers: headers,
@@ -318,7 +349,7 @@ function onMicrophoneReady(stream) {
         console.log('Sending audio');
         // The browser should automatically set the Content-Type based on the body
         // but let's set it explicitly just in case
-        let headers = {'Authorization': 'Bearer ' + username + userToken, 'Content-Type': detectedMimeType};
+        let headers = {'Authorization': 'Bearer ' + Base64.encode(username + userToken), 'Content-Type': detectedMimeType};
         let options = {
             method: 'POST',
             headers: headers,
@@ -348,17 +379,24 @@ function onMicrophoneReady(stream) {
 }
 
 function onMicrophoneError(err) {
-    console.log('The following error occurred: ', err);
+    record.className = "record denied"
     if (err.name == "NotAllowedError") {
-        record.className = "record denied"
-        setText(textContent, "Could not get microphone permission :(");
+        displayError("Could not get microphone permission :(", err);
     } else if (err.name == "NotFoundError") {
-        record.className = "record denied"
-        setText(textContent, "No microphone found :(");
+        displayError("No microphone found :(", err);
     } else {
-        record.className = "record denied"
-        setText(textContent, "Error: {error}", {error});
+        displayError("Error: {error}", {error});
     }
+}
+
+function stopRecording() {
+    if (mediaRecorder && mediaRecorder.state == "recording") {
+        mediaRecorder.stop();
+        console.log("Recording stopped. MediaRecorder state: ", mediaRecorder.state);
+    }
+    record.className = "record"
+    setText(record, "Record");
+    recording = false;
 }
 
 record.onclick = function() {
@@ -369,8 +407,7 @@ record.onclick = function() {
         navigator.mediaDevices.getUserMedia(constraints).then(onMicrophoneReady, onMicrophoneError);
     } else if (!mediaRecorder) {
         console.log("Something went wrong initialising media recorder")
-        record.className = "record error"
-        setText(record, "Something went wrong :(");
+        displayError("Something went wrong :(")
     } else if (!recording) {
         mediaRecorder.start();
         console.log("Recording started. MediaRecorder state: ", mediaRecorder.state);
@@ -378,17 +415,18 @@ record.onclick = function() {
         setText(record, "Stop");
         recording = true;
     } else {
-        mediaRecorder.stop();
-        console.log("Recording stopped. MediaRecorder state: ", mediaRecorder.state);
-        record.className = "record"
-        setText(record, "Record");
-        recording = false;
+        stopRecording();
     }
 }
 
 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    console.log('getUserMedia not supported on this browser!');
+    displayError('getUserMedia not supported on this browser!')
+}
+
+function displayError(error, obj) {
+    console.log(error, obj);
     warning.style.display = "block"
+    setText(warning, error);
 }
 
 function uuid() {

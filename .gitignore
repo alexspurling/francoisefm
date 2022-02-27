@@ -3,6 +3,7 @@
 screenshots/
 target/
 recordings/
+converted/
 logs/
 server.properties
 __pycache__/

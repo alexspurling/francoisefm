@@ -2,6 +2,7 @@
   "name": "Nom / Nom de station (e.g. Family Quéromain)",
   "welcome": "Bienvenue sur <span class=\"radio\">{username} {frequency}</span>, votre propre radio sur Françoise FM ! <div class=\"tips\"><ul><li>Enregistrez autant de messages que vous le souhaitez - ils seront diffusés dans l'ordre.</li><li>Vous avez une idée pour une autre radio ? <a href=\"/\">Cliquez ici</a> pour en créer un autre.</li><li>Cliquez sur enregistrer pour commencer!</li></ul></div>",
   "nomicrophone": "L'accès au microphone n'est pas pris en charge dans ce navigateur :(",
+  "nomicrophonefound": "Aucun micro trouvé :(",
   "microphoneblocked": "Impossible d'obtenir l'autorisation du microphone :(",
   "error": "Erreur: {error}",
   "somethingwrong": "Quelque chose s'est mal passé :(",

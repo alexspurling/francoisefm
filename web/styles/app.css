@@ -202,6 +202,7 @@ button.delete {
 .warning {
   font-size: 1.5rem;
   color: #e41e26;
+  text-align: center;
 }
 
 /* Checkbox hack to control information box display */
