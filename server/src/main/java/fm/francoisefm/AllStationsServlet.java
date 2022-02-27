@@ -14,6 +14,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 public class AllStationsServlet extends HttpServlet {
 
@@ -48,17 +49,37 @@ public class AllStationsServlet extends HttpServlet {
 
         writer.println("[");
 
-        List<Path> allFiles = Files.walk(ServletHelper.CONVERTED)
-                .filter(Files::isRegularFile)
-                .filter(p -> AUDIO_FILE_EXTENSIONS.contains(extension(p)))
-                .sorted(Comparator.comparingLong(p -> p.toFile().lastModified()))
-                .toList();
+        List<Station> allStations = StationsDb.getStations();
 
-        if (!allFiles.isEmpty()) {
-            for (int i = 0; i < allFiles.size() - 1; i++) {
-                printPath(writer, allFiles.get(i), true);
+        for (int j = 0; j < allStations.size(); j++) {
+            var station = allStations.get(j);
+            writer.println("  {");
+            writer.println("    \"name\": \"" + station.name() + "\",");
+            writer.println("    \"frequency\": " + station.frequency() + ",");
+            writer.println("    \"files\": [");
+
+            String sanitisedFileName = new UserId(station.name(), station.token()).sanitisedName();
+
+            List<Path> allFiles = Files.walk(ServletHelper.CONVERTED.resolve(station.token()), 1)
+                    .filter(Files::isRegularFile)
+                    .filter(p -> AUDIO_FILE_EXTENSIONS.contains(extension(p)))
+                    .filter((p) -> p.getFileName().toString().matches("^" + Pattern.quote(sanitisedFileName) + "_([0-9][0-9])(-lowpass)?\\.ogg"))
+                    .sorted(Comparator.comparingLong(p -> p.toFile().lastModified()))
+                    .toList();
+
+            if (!allFiles.isEmpty()) {
+                for (int i = 0; i < allFiles.size() - 1; i++) {
+                    printPath(writer, allFiles.get(i), true);
+                }
+                printPath(writer, allFiles.get(allFiles.size() - 1), false);
             }
-            printPath(writer, allFiles.get(allFiles.size() - 1), false);
+
+            writer.println("    ]");
+            if (j < allStations.size() - 1) {
+                writer.println("  },");
+            } else {
+                writer.println("  }");
+            }
         }
 
         writer.println("]");
@@ -78,7 +99,7 @@ public class AllStationsServlet extends HttpServlet {
     private void printPath(PrintWriter writer, Path path, boolean printComma) {
         String hash = calcualteHash(path);
         Path relativePath = ServletHelper.CONVERTED.relativize(path);
-        writer.print("{\"path\": \"");
+        writer.print("      {\"path\": \"");
         writer.print(relativePath);
         writer.print("\", \"hash\": \"");
         writer.print(hash);

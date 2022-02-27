@@ -53,7 +53,7 @@ public class AllRecordingsServlet extends HttpServlet {
         File userDir = ServletHelper.getUserDir(userId);
         File[] userFiles = userDir.listFiles();
 
-        int frequency = FrequencyCalculator.calculate(userId);
+        int frequency = StationsDb.calculateFrequency(userId);
 
         List<File> ownUserFiles;
         // Make sure we only look for files that match the logged-in user's name
@@ -61,7 +61,7 @@ public class AllRecordingsServlet extends HttpServlet {
             ownUserFiles = emptyList();
         } else {
             ownUserFiles = Arrays.stream(userFiles)
-                    .filter((f) -> f.getName().matches("^" + Pattern.quote(userId.sanitisedName()) + "_([1-9][0-9][0-9][0-9]?)_([0-9][0-9])\\.\\w+$"))
+                    .filter((f) -> f.getName().matches("^" + Pattern.quote(userId.sanitisedName()) + "_([0-9][0-9])\\.\\w+$"))
                     .sorted(Comparator.comparingLong(File::lastModified))
                     .toList();
         }
@@ -192,9 +192,8 @@ public class AllRecordingsServlet extends HttpServlet {
     private File getNewAudioFile(UserId userId, String fileExtension) {
         File userDir = ServletHelper.getUserDir(userId);
         String sanitisedUserName = userId.sanitisedName();
-        int frequency = FrequencyCalculator.calculate(userId);
         for (int i = 1; i < MAX_FILES_PER_USER; i++) {
-            File audioFile = new File(userDir, String.format(sanitisedUserName + "_%03d_%02d", frequency, i) + fileExtension);
+            File audioFile = new File(userDir, String.format(sanitisedUserName + "_%02d", i) + fileExtension);
             if (!audioFile.exists()) {
                 return audioFile;
             }

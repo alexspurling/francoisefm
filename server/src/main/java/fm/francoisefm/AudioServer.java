@@ -49,7 +49,7 @@ public class AudioServer {
         server.start();
 
         long timeTaken = System.currentTimeMillis() - startTime;
-        LOG.info("Server started in " + timeTaken + "ms");
+        LOG.info("New server started in " + timeTaken + "ms");
 
         server.join();
     }
@@ -84,6 +84,7 @@ public class AudioServer {
         ensureDirectoryExists(new File("logs"));
         ensureDirectoryExists(RECORDINGS.toFile());
         ensureDirectoryExists(CONVERTED.toFile());
+        StationsDb.initDb();
 
         AudioServer server = new AudioServer();
         server.start();
