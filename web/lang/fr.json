@@ -1,6 +1,6 @@
 {
   "name": "Nom / Nom de station (e.g. Family Quéromain)",
-  "welcome": "Bienvenue sur <span class=\"radio\">{username} {frequency}</span>, votre propre radio sur Françoise FM ! <div class=\"tips\"><ul><li>Enregistrez autant de messages que vous le souhaitez - ils seront diffusés dans l'ordre.</li><li>Vous avez une idée pour une autre radio ? <a href=\"/\">Cliquez ici</a> pour en créer un autre.</li><li>Cliquez sur enregistrer pour commencer!</li></ul></div>",
+  "welcome": "Bienvenue sur <span class=\"radio\">{username} {frequency} FM</span>, votre propre frequence sur la radio de Françoise ! <div class=\"tips\"><ul><li>Lorsqu'elle est syntonisée sur cette fréquence, la radio diffusera vos messages.</li><li>Enregistrez autant de messages que vous le souhaitez - ils seront diffusés dans l'ordre.</li><li>Vous avez une idée pour une autre radio ? <a href=\"/\">Cliquez ici</a> pour en créer un autre.</li><li>Cliquez sur enregistrer pour commencer!</li></ul></div>",
   "nomicrophone": "L'accès au microphone n'est pas pris en charge dans ce navigateur \uD83E\uDD28",
   "nomicrophonefound": "Aucun micro trouvé 😖",
   "microphoneblocked": "Impossible d'obtenir l'autorisation du microphone 😖",
