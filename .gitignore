@@ -8,3 +8,5 @@ logs/
 server.properties
 __pycache__/
 francoisefm.db
+radio/stations.json
+
