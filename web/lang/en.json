@@ -1,6 +1,6 @@
 {
   "name": "Name / Station name (e.g. Spurley Family)",
-  "welcome": "Welcome to <span class=\"radio\">{username} {frequency}</span>, your very own radio station on Françoise FM! <div class=\"tips\"><ul><li>Record as many messages as you like - they will be broadcast in order.</li><li>Have an idea for another radio station? <a href=\"/\">Click here</a> to create another one.</li><li>Click record to start!</li></ul></div>",
+  "welcome": "Welcome to <span class=\"radio\">{username} {frequency} FM</span>, your very own frequency on Françoise's radio! <div class=\"tips\"><ul><li>When tuned to this frequency, the radio will play your messages.</li><li>Record as many messages as you like - they will be broadcast in order.</li><li>Have an idea for another radio station? <a href=\"/\">Click here</a> to create another one.</li><li>Click record to start!</li></ul></div>",
   "nomicrophone": "Microphone access is not supported in this browser \uD83E\uDD28",
   "nomicrophonefound": "No microphone found \uD83D\uDE16",
   "microphoneblocked": "Could not get microphone permission \uD83D\uDE16",

@@ -1,6 +1,6 @@
 {
   "name": "Navn / Stationsnavn (e.g. Buxbom Family)",
-  "welcome": "Velkommen til <span class=\"radio\">{username} {frequency}</span>, din helt egen radiostation på Françoise FM!  <div class=\"tips\"><ul><li>Optag så mange beskeder, du vil - de vil blive udsendt i rækkefølge.</li><li>Har du en idé til en anden radiostation? <a href=\"/\">Klik her</a> for at oprette endnu en.</li><li>Klik optag for at starte!</li></ul></div>",
+  "welcome": "Velkommen til <span class=\"radio\">{username} {frequency} FM</span>, din helt egen frekvens på Françoisees radio !  <div class=\"tips\"><ul><li>Når den er indstillet til denne frekvens, afspiller radioen dine beskeder.</li><li>Optag så mange beskeder, du vil - de vil blive udsendt i rækkefølge.</li><li>Har du en idé til en anden radiostation? <a href=\"/\">Klik her</a> for at oprette endnu en.</li><li>Klik optag for at starte!</li></ul></div>",
   "nomicrophone": "Mikrofonadgang understøttes ikke i denne browser \uD83E\uDD28",
   "nomicrophonefound": "Ingen mikrofon fundet \uD83D\uDE16",
   "microphoneblocked": "Kunne ikke få mikrofontilladelse \uD83D\uDE16",
