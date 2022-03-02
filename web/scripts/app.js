@@ -381,9 +381,9 @@ function onMicrophoneReady(stream) {
 function onMicrophoneError(err) {
     record.className = "record denied"
     if (err.name == "NotAllowedError") {
-        displayError("Could not get microphone permission :(", err);
+        displayError("Could not get microphone permission 😖", err);
     } else if (err.name == "NotFoundError") {
-        displayError("No microphone found :(", err);
+        displayError("No microphone found 😖", err);
     } else {
         displayError("Error: {error}", {error});
     }
@@ -407,7 +407,7 @@ record.onclick = function() {
         navigator.mediaDevices.getUserMedia(constraints).then(onMicrophoneReady, onMicrophoneError);
     } else if (!mediaRecorder) {
         console.log("Something went wrong initialising media recorder")
-        displayError("Something went wrong :(")
+        displayError("Something went wrong 😢")
     } else if (!recording) {
         mediaRecorder.start();
         console.log("Recording started. MediaRecorder state: ", mediaRecorder.state);
@@ -420,7 +420,7 @@ record.onclick = function() {
 }
 
 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    displayError('getUserMedia not supported on this browser!')
+    displayError('Microphone access is not supported in this browser 🤨')
 }
 
 function displayError(error, obj) {
