@@ -1,0 +1,269 @@
+[
+  {
+    "name": "What should I test",
+    "token": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7",
+    "frequency": 897,
+    "files": [
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/What_should_I_test_01.ogg",
+        "hash": "3f779b5ca2feeae1ee4c932500df4c5e"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/What_should_I_test_01-lowpass.ogg",
+        "hash": "28fca997d91f119ef259e4a299775bb9"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/What_should_I_test_03.ogg",
+        "hash": "de1d6203367e4a3f46ec2dccdb4f1f0f"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/What_should_I_test_03-lowpass.ogg",
+        "hash": "1467d7ac28e676ccb6f6e58d0dc70a5f"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/What_should_I_test_02.ogg",
+        "hash": "26d0b1fe8232b12e68cd84a6d12d392f"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/What_should_I_test_02-lowpass.ogg",
+        "hash": "8dc3ea86312747dd3fcb80875a560588"
+      }
+    ]
+  },
+  {
+    "name": "Another station created",
+    "token": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7",
+    "frequency": 902,
+    "files": [
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Another_station_created_01.ogg",
+        "hash": "7c1dc34e9bd8941eba6701963394a8fe"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Another_station_created_01-lowpass.ogg",
+        "hash": "8ad3a0f7f670983d6a82fc2b1c4dcad9"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Another_station_created_02.ogg",
+        "hash": "626b3ec7ea960d3b96bf8ce77917bd08"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Another_station_created_02-lowpass.ogg",
+        "hash": "ecee9c6983b3722bf86b8a47e7d11cb8"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Another_station_created_03.ogg",
+        "hash": "974ee48d05c67d55acdb65eddf509140"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Another_station_created_03-lowpass.ogg",
+        "hash": "12e62f8dc7f2a01708262e29faf2fe16"
+      }
+    ]
+  },
+  {
+    "name": "Pancake Day",
+    "token": "e6c96aa4-39d7-41bc-a77a-4f2fba096289",
+    "frequency": 1040,
+    "files": [
+      {
+        "path": "e6c96aa4-39d7-41bc-a77a-4f2fba096289/Pancake_Day_01.ogg",
+        "hash": "4124420d324b5adcf415afe9ba194229"
+      },
+      {
+        "path": "e6c96aa4-39d7-41bc-a77a-4f2fba096289/Pancake_Day_01-lowpass.ogg",
+        "hash": "672659e9f54fc853d556bfb339b2104c"
+      }
+    ]
+  },
+  {
+    "name": "Optimum",
+    "token": "81c67759-5480-4ab5-a644-ebe5af1e7cd2",
+    "frequency": 1011,
+    "files": []
+  },
+  {
+    "name": "French Fromage Forecast",
+    "token": "81c67759-5480-4ab5-a644-ebe5af1e7cd2",
+    "frequency": 917,
+    "files": [
+      {
+        "path": "81c67759-5480-4ab5-a644-ebe5af1e7cd2/French_Fromage_Forecast_01.ogg",
+        "hash": "b49fdcf1fa57196c4f57e41a7346aa6c"
+      },
+      {
+        "path": "81c67759-5480-4ab5-a644-ebe5af1e7cd2/French_Fromage_Forecast_01-lowpass.ogg",
+        "hash": "899e1c144b4fd5747d3a293876a93757"
+      }
+    ]
+  },
+  {
+    "name": "Audio chair testing",
+    "token": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7",
+    "frequency": 121,
+    "files": [
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Audio_chair_testing_01-lowpass.ogg",
+        "hash": "f08622d4c300c5ec9c8e2b5959486330"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Audio_chair_testing_02.ogg",
+        "hash": "2e82d9f8011a816765abdea72399f6ca"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Audio_chair_testing_01.ogg",
+        "hash": "b35a3653aa6cb0c400d2f1dfd3ecdc41"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Audio_chair_testing_02-lowpass.ogg",
+        "hash": "85e6d85ff64e026c52f5b58fd178ad9c"
+      }
+    ]
+  },
+  {
+    "name": "Christophe",
+    "token": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7",
+    "frequency": 150,
+    "files": [
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Christophe_01-lowpass.ogg",
+        "hash": "2155fbfe7feee8db9a42eaae6542d965"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Christophe_01.ogg",
+        "hash": "40793b367d15bfdb5d222c70f8312c4d"
+      }
+    ]
+  },
+  {
+    "name": "FFF fm",
+    "token": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7",
+    "frequency": 173,
+    "files": [
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/FFF_fm_01.ogg",
+        "hash": "55e7e24be97ea930ddbeca51e9950520"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/FFF_fm_01-lowpass.ogg",
+        "hash": "6daa8a30ff0c36bc44fff59dc22371e1"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/FFF_fm_02.ogg",
+        "hash": "d028b3c36dd4c0cc693076956e4f6599"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/FFF_fm_02-lowpass.ogg",
+        "hash": "bc988a15eb566549ae260b0fa8e0185e"
+      }
+    ]
+  },
+  {
+    "name": "Flat White Banbury",
+    "token": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7",
+    "frequency": 68,
+    "files": [
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Flat_White_Banbury_02-lowpass.ogg",
+        "hash": "918692e7f8893c1894786d245e741416"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Flat_White_Banbury_02.ogg",
+        "hash": "602a304732a167f4feab50830edaa0c2"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Flat_White_Banbury_01.ogg",
+        "hash": "abde5fa71cb6c776c501ac2ce9dd5f84"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Flat_White_Banbury_01-lowpass.ogg",
+        "hash": "85d53783d6aba0d9a8f3f42e180ae48e"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Flat_White_Banbury_03.ogg",
+        "hash": "70931e96bc318fdfe31136980e0d667e"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Flat_White_Banbury_04.ogg",
+        "hash": "ebda5b621d46da9e140d2d62b12823fa"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Flat_White_Banbury_04-lowpass.ogg",
+        "hash": "635430d40ce7b384a2703ffa0d653d59"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Flat_White_Banbury_03-lowpass.ogg",
+        "hash": "e76b421067b3622d9e3cbf1b19dc9129"
+      }
+    ]
+  },
+  {
+    "name": "Goblin Gladiators",
+    "token": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7",
+    "frequency": 100,
+    "files": [
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Goblin_Gladiators_01.ogg",
+        "hash": "329a34c4b101656b34956d639977a695"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Goblin_Gladiators_01-lowpass.ogg",
+        "hash": "ca97c81fd9eb08176c3cf2265a9cdb77"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Goblin_Gladiators_02.ogg",
+        "hash": "07520de0f5792ddb2a674d38b29b7299"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Goblin_Gladiators_02-lowpass.ogg",
+        "hash": "d000be844a57f9f7e4c1ed5c6ffe9a65"
+      }
+    ]
+  },
+  {
+    "name": "Radio Luxembourg",
+    "token": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7",
+    "frequency": 122,
+    "files": [
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Radio_Luxembourg_01-lowpass.ogg",
+        "hash": "dc8ef6ddcef342b8c7681a535cd56907"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Radio_Luxembourg_01.ogg",
+        "hash": "53006cf382dfc1c812556de038c6890a"
+      }
+    ]
+  },
+  {
+    "name": "Sheep Shearers FM",
+    "token": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7",
+    "frequency": 114,
+    "files": [
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Sheep_Shearers_FM_01.ogg",
+        "hash": "a02cd8dc09b698d29b6ec1718263283a"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Sheep_Shearers_FM_01-lowpass.ogg",
+        "hash": "cb3a56b730c227cb6710c8428896eb38"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Sheep_Shearers_FM_02.ogg",
+        "hash": "4e8eec2f1498136c6c585224229f1ba0"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Sheep_Shearers_FM_03.ogg",
+        "hash": "abc2ea5c424f91a0da027ce5e3456e4c"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Sheep_Shearers_FM_02-lowpass.ogg",
+        "hash": "747e621242478aed153e35337122b867"
+      },
+      {
+        "path": "df58bf12-a148-4c6b-b3ff-5827f1a30ea7/Sheep_Shearers_FM_03-lowpass.ogg",
+        "hash": "e2cdb58456b7c0cf5674856c1ad85cd7"
+      }
+    ]
+  }
+]
