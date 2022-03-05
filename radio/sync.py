@@ -43,12 +43,15 @@ class Sync:
                 freq_files = []
                 files_by_freq[freq] = freq_files
             for file in station_files:
-                freq_files.append({"file": os.path.join(RECORDINGS, file["path"]), "name": station_name})
+                # only include the normal quality files
+                if not file["path"].endswith("-lowpass.ogg"):
+                    freq_files.append({"file": os.path.join(RECORDINGS, file["path"]), "name": station_name})
         for freq in sorted(files_by_freq.keys()):
             freq_str = f"{freq / 10}"
             files_for_freq = files_by_freq[freq]
             num_files = len(files_for_freq)
-            logging.info(f"Got {num_files} files for {freq_str} Mhz: {files_for_freq}")
+            filenames_for_freq = [os.path.basename(f["file"]) for f in files_for_freq]
+            logging.info(f"Got {num_files} files for {freq_str} Mhz: {filenames_for_freq}")
         self.files_by_frequency = files_by_freq
 
     def get_local_stations(self):
