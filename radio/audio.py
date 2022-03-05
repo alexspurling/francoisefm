@@ -134,8 +134,8 @@ class Audio:
         self.track_list = track_list
         self.track_index = index
         track = self.track_list[index]
-        name = self.track_list[index]["name"]
-        file: str = track["file"]
+        name = track["name"]
+        file = track["file"]
         nearby_file = file[0:file.rindex(".")] + "-lowpass" + file[file.rindex("."):]
 
         logging.debug(f"Playing nearby: {nearby}")

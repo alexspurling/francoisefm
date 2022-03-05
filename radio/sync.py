@@ -33,13 +33,23 @@ class Sync:
         self.save_local_stations()
 
     def calculate_files_by_frequency(self):
+        files_by_freq = {}
         for station in self.all_stations:
             freq = station['frequency']
-            freq_files = self.files_by_frequency.get(freq)
-            if freq_files is None:
+            station_files = station['files']
+            station_name = station['name']
+            freq_files = files_by_freq.get(freq)
+            if freq_files is None and len(station_files) > 0:
                 freq_files = []
-                self.files_by_frequency[freq] = freq_files
-            freq_files.extend(station['files'])
+                files_by_freq[freq] = freq_files
+            for file in station_files:
+                freq_files.append({"file": os.path.join(RECORDINGS, file["path"]), "name": station_name})
+        for freq in sorted(files_by_freq.keys()):
+            freq_str = f"{freq / 10}"
+            files_for_freq = files_by_freq[freq]
+            num_files = len(files_for_freq)
+            logging.info(f"Got {num_files} files for {freq_str} Mhz: {files_for_freq}")
+        self.files_by_frequency = files_by_freq
 
     def get_local_stations(self):
         if os.path.exists(STATIONS):
@@ -109,3 +119,4 @@ if __name__ == "__main__":
     app_log.setLevel(logging.DEBUG)
     sync = Sync()
     sync.sync_files()
+    print(sync.files_by_frequency)
