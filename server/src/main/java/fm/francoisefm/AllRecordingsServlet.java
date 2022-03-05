@@ -24,7 +24,7 @@ public class AllRecordingsServlet extends HttpServlet {
     private static final Pattern AUDIO_CONTAINER = Pattern.compile("^audio/(\\w+)", Pattern.CASE_INSENSITIVE);
 
     private static final int MAX_FILES_PER_USER = 100;
-    private static final int MAX_FILE_SIZE = 2097152; // 2mb max file size gives about 5 minutes recording
+    private static final int MAX_FILE_SIZE = 26214400; // 25mb max file size gives about 60 minutes recording
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) {
