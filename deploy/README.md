@@ -74,7 +74,7 @@ ansible-playbook -i inventory 05-radio.yml -u pi
 
 **Manual steps**
 
-This enables the service to ensure it starts on restart. Not sure how to make automate it yet.
+This enables the service to ensure it starts on restart. Not sure how to automate it yet.
 ```
 sudo systemctl enable francoisefm_radio
 ```
